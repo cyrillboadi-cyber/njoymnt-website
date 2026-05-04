@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NJOYMNT – MVP Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #e8c97a;
+      --black: #080808;
+      --dark: #111111;
+      --dark2: #1a1a1a;
+      --white: #f5f5f5;
+      --gray: #888;
+      --accent: #ff4d6d;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      overflow-x: clip;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+    /* ══════════════════════════════════
+       HERO / GALLERY SWIPER
+    ══════════════════════════════════ */
+    #hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      cursor: grab;
+    }
+    #hero:active { cursor: grabbing; }
+
+    .slides-wrapper {
+      display: flex;
+      height: 100%;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.18, 1);
+      will-change: transform;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.55);
+    }
+
+    /* Gradient overlay on slides */
+    .slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,8,8,0.1) 0%,
+        rgba(8,8,8,0.0) 40%,
+        rgba(8,8,8,0.8) 100%
+      );
+    }
+
+    /* Hero Text */
+    .hero-content {
+      position: absolute;
+      bottom: 10%;
+      left: 6%;
+      z-index: 10;
+      max-width: 700px;
+    }
+
+    .hero-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      opacity: 0;
+      animation: fadeUp 0.8s 0.5s forwards;
+    }
+
+    .hero-title span { color: var(--gold); }
+
+    .hero-sub {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(245,245,245,0.65);
+      opacity: 0;
+      animation: fadeUp 0.8s 0.7s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 32px;
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.9s forwards;
+    }
+
+    .btn-primary {
+      padding: 14px 36px;
+      background: var(--gold);
+      color: var(--black);
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+    .btn-outline {
+      padding: 14px 36px;
+      background: transparent;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Slide indicators */
+    .slide-dots {
+      position: absolute;
+      bottom: 8%;
+      right: 6%;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 28px;
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: background 0.4s, width 0.4s;
+    }
+    .dot.active { background: var(--gold); width: 52px; }
+
+    /* Swipe hint */
+    .swipe-hint {
+      position: absolute;
+      bottom: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      text-align: center;
+      opacity: 0;
+      animation: fadeIn 1s 1.5s forwards;
+    }
+    .swipe-hint span {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .swipe-arrow {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .swipe-arrow i {
+      width: 6px; height: 6px;
+      border-right: 1.5px solid rgba(255,255,255,0.3);
+      border-bottom: 1.5px solid rgba(255,255,255,0.3);
+      transform: rotate(-45deg);
+      animation: arrowPulse 1.5s infinite;
+    }
+    .swipe-arrow i:nth-child(2) { animation-delay: 0.2s; }
+    .swipe-arrow i:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ══════════════════════════════════
+       NAVBAR (fixed)
+    ══════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 22px 6%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s, padding 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(12px);
+      padding: 14px 6%;
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(245,245,245,0.7);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* Burger */
+    .burger-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      z-index: 1100;
+      padding: 6px;
+      background: none;
+      border: none;
+    }
+    .burger-btn span {
+      display: block;
+      height: 2px;
+      background: var(--white);
+      transition: all 0.4s cubic-bezier(0.77,0,0.18,1);
+    }
+    .burger-btn span:nth-child(1) { width: 32px; }
+    .burger-btn span:nth-child(2) { width: 22px; margin-left: auto; }
+    .burger-btn span:nth-child(3) { width: 32px; }
+
+    .burger-btn.active span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+      width: 32px;
+    }
+    .burger-btn.active span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    .burger-btn.active span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+      width: 32px;
+    }
+
+    /* ══════════════════════════════════
+       FULL SCREEN BURGER MENU
+    ══════════════════════════════════ */
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      clip-path: circle(0% at calc(100% - 60px) 40px);
+      transition: clip-path 0.8s cubic-bezier(0.77,0,0.18,1);
+    }
+    .menu-overlay.open {
+      clip-path: circle(150% at calc(100% - 60px) 40px);
+      pointer-events: all;
+    }
+
+    .menu-inner {
+      display: flex;
+      gap: 10vw;
+      align-items: flex-start;
+    }
+
+    .menu-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .menu-nav-list li {
+      overflow: hidden;
+    }
+
+    .menu-nav-list a {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      display: block;
+      transform: translateY(110%);
+      transition: transform 0.6s cubic-bezier(0.77,0,0.18,1), color 0.3s;
+      line-height: 1.1;
+    }
+    .menu-nav-list a:hover { color: var(--gold); }
+
+    .menu-overlay.open .menu-nav-list a {
+      transform: translateY(0);
+    }
+    .menu-nav-list li:nth-child(1) a { transition-delay: 0.15s; }
+    .menu-nav-list li:nth-child(2) a { transition-delay: 0.22s; }
+    .menu-nav-list li:nth-child(3) a { transition-delay: 0.29s; }
+    .menu-nav-list li:nth-child(4) a { transition-delay: 0.36s; }
+    .menu-nav-list li:nth-child(5) a { transition-delay: 0.43s; }
+    .menu-nav-list li:nth-child(6) a { transition-delay: 0.50s; }
+
+    .menu-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 380px;
+      padding-top: 12px;
+      opacity: 0;
+      transition: opacity 0.5s 0.5s;
+    }
+    .menu-overlay.open .menu-side { opacity: 1; }
+
+    .menu-side-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+
+    .menu-genres {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .menu-genres li {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .menu-genres li:hover { color: var(--white); }
+
+    .menu-socials {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .menu-socials a {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: rgba(245,245,245,0.5);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .menu-socials a:hover { color: var(--gold); }
+
+    .menu-line {
+      width: 1px;
+      height: 380px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* ══════════════════════════════════
+       TICKER / MARQUEE
+    ══════════════════════════════════ */
+    .ticker-wrap {
+      background: var(--gold);
+      padding: 12px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-flex;
+      animation: ticker 25s linear infinite;
+    }
+    .ticker-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.2em;
+      color: var(--black);
+      padding: 0 40px;
+    }
+    .ticker-dot {
+      color: var(--black);
+      opacity: 0.4;
+    }
+
+    /* ══════════════════════════════════
+       SECTION: ABOUT
+    ══════════════════════════════════ */
+    .section {
+      padding: 100px 6%;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+    }
+
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-text p {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(245,245,245,0.7);
+      margin-top: 24px;
+      max-width: 480px;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .stat-item {
+      border-top: 1px solid rgba(201,168,76,0.3);
+      padding-top: 20px;
+    }
+
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    /* ══════════════════════════════════
+       GENRE TAGS
+    ══════════════════════════════════ */
+    .genre-section {
+      background: var(--dark);
+      padding: 80px 6%;
+      text-align: center;
+    }
+
+    .genre-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 48px;
+    }
+
+    .genre-tag {
+      padding: 12px 28px;
+      border: 1.5px solid rgba(201,168,76,0.25);
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(245,245,245,0.6);
+      cursor: default;
+      transition: all 0.4s;
+      position: relative;
+      overflow: hidden;
+    }
+    .genre-tag::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.77,0,0.18,1);
+      z-index: -1;
+    }
+    .genre-tag:hover {
+      color: var(--black);
+      border-color: var(--gold);
+    }
+    .genre-tag:hover::before { transform: scaleX(1); }
+
+    /* ══════════════════════════════════
+       EVENTS SECTION
+    ══════════════════════════════════ */
+    #events { background: var(--black); }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2px;
+      margin-top: 56px;
+    }
+
+    .event-card {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .event-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.77,0,0.18,1), filter 0.6s;
+      filter: brightness(0.7) saturate(0.8);
+    }
+    .event-card:hover img {
+      transform: scale(1.06);
+      filter: brightness(0.5) saturate(1);
+    }
+
+    .event-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,8,8,0.9) 0%, transparent 60%);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .event-date {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .event-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .event-venue {
+      font-size: 0.72rem;
+      color: rgba(245,245,245,0.55);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .event-tag {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+    }
+
+    .event-btn {
+      margin-top: 16px;
+      padding: 10px 22px;
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      width: fit-content;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.4s;
+    }
+    .event-card:hover .event-btn {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .event-btn:hover {
+      background: var(--gold);
+      color: var(--black);
+      border-color: var(--gold);
+    }
+
+    /* ══════════════════════════════════
+       GALLERY GRID (STRIP)
+    ══════════════════════════════════ */
+    #gallery { background: var(--dark); }
+
+    .gallery-strip {
+      display: flex;
+      gap: 3px;
+      margin-top: 56px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      cursor: grab;
+    }
+    .gallery-strip:active { cursor: grabbing; }
+    .gallery-strip::-webkit-scrollbar { display: none; }
+
+    .gallery-strip img {
+      height: 400px;
+      width: auto;
+      object-fit: cover;
+      flex-shrink: 0;
+      filter: grayscale(20%);
+      transition: filter 0.5s, transform 0.5s;
+    }
+    .gallery-strip img:hover {
+      filter: grayscale(0%);
+      transform: scale(1.02);
+    }
+
+    /* ══════════════════════════════════
+       NEWSLETTER
+    ══════════════════════════════════ */
+    #newsletter {
+      background: var(--dark2);
+      padding: 100px 6%;
+      text-align: center;
+    }
+
+    #newsletter .section-title {
+      margin: 0 auto;
+      max-width: 600px;
+    }
+
+    #newsletter p {
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin: 20px auto;
+      letter-spacing: 0.05em;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 0;
+      max-width: 500px;
+      margin: 32px auto 0;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 16px 22px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-right: none;
+      color: var(--white);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .newsletter-form input::placeholder { color: rgba(255,255,255,0.3); }
+    .newsletter-form input:focus { border-color: var(--gold); }
+
+    .newsletter-form button {
+      padding: 16px 28px;
+      background: var(--gold);
+      color: var(--black);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .newsletter-form button:hover { background: var(--gold-light); }
+
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    footer {
+      background: var(--black);
+      padding: 60px 6% 30px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 60px;
+      flex-wrap: wrap;
+      gap: 40px;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 0.1em;
+      line-height: 1;
+    }
+    .footer-logo span { color: var(--gold); }
+    .footer-logo small {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--gray);
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    .footer-col h4 {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-col ul a {
+      font-size: 0.82rem;
+      color: var(--gray);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+    }
+    .footer-col ul a:hover { color: var(--white); }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-bottom p {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.1em;
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 20px;
+    }
+    .footer-socials a {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-socials a:hover { color: var(--gold); }
+
+    /* ══════════════════════════════════
+       SCROLL REVEAL
+    ══════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ══════════════════════════════════
+       KEYFRAMES
+    ══════════════════════════════════ */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(30px); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes arrowPulse {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
+    @media (max-width: 900px) {
+      #about { grid-template-columns: 1fr; gap: 50px; }
+      .nav-links { display: none; }
+      .menu-inner { flex-direction: column; gap: 30px; align-items: flex-start; padding: 0 8%; }
+      .menu-line { display: none; }
+      .menu-side { height: auto; }
+      .footer-top { flex-direction: column; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-cta { flex-direction: column; }
+      .newsletter-form { flex-direction: column; }
+      .newsletter-form input { border-right: 1px solid rgba(255,255,255,0.1); border-bottom: none; }
+      .events-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ NAVBAR ══ -->
+  <nav id="navbar">
+    <a href="#hero" class="nav-logo">NJO<span>Y</span>MNT</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#newsletter">Contact</a></li>
+    </ul>
+    <button class="burger-btn" id="burgerBtn" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- ══ FULLSCREEN BURGER MENU ══ -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-inner">
+      <ul class="menu-nav-list">
+        <li><a href="#hero" class="menu-link" data-ne-id="0">Home</a></li>
+        <li><a href="#about" class="menu-link" data-ne-id="1">About</a></li>
+        <li><a href="#events" class="menu-link" data-ne-id="2">Events</a></li>
+        <li><a href="#gallery" class="menu-link" data-ne-id="3">Gallery</a></li>
+        <li><a href="#newsletter" class="menu-link" data-ne-id="4">Newsletter</a></li>
+        <li><a href="#newsletter" class="menu-link" data-ne-id="5">Contact</a></li>
+      </ul>
+      <div class="menu-line"></div>
+      <div class="menu-side">
+        <div>
+          <p class="menu-side-label">Genres</p>
+          <ul class="menu-genres">
+            <li>Afrotrap</li>
+            <li>Afrohouse</li>
+            <li>Latino</li>
+            <li>Trap</li>
+            <li>Hip Hop</li>
+            <li>R&amp;B</li>
+          </ul>
+        </div>
+        <div>
+          <p class="menu-side-label">Follow us</p>
+          <div class="menu-socials">
+            <a href="#">Instagram</a>
+            <a href="#">TikTok</a>
+            <a href="#">Spotify</a>
+            <a href="#">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HERO / SWIPER GALLERY ══ -->
+  <section id="hero">
+    <div class="slides-wrapper" id="slidesWrapper">
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&q=80&auto=format" alt="Event 1"/>
+      </div>
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=1600&q=80&auto=format" alt="Event 2"/>
+      </div>
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1600&q=80&auto=format" alt="Event 3"/>
+      </div>
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1571266028243-d220c6a3fdb4?w=1600&q=80&auto=format" alt="Event 4"/>
+      </div>
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1600&q=80&auto=format" alt="Event 5"/>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-label" data-ne-id="6">MVP Events präsentiert</p>
+      <h1 class="hero-title">NJO<span>Y</span>MNT</h1>
+      <p class="hero-sub" data-ne-id="7">For the Culture · Vienna · Afrotrap · Afrohouse · Latino · R&amp;B</p>
+      <div class="hero-cta">
+        <a href="#events" class="btn-primary" data-ne-id="8">Nächstes Event</a>
+        <a href="#gallery" class="btn-outline" data-ne-id="9">Gallery</a>
+      </div>
+    </div>
+
+    <div class="slide-dots" id="slideDots"></div>
+
+    <div class="swipe-hint">
+      <span>Swipe</span>
+      <div class="swipe-arrow">
+        <i></i><i></i><i></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ TICKER ══ -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span class="ticker-item" data-ne-id="10">NJOYMNT</span>
+      <span class="ticker-item ticker-dot" data-ne-id="11">✦</span>
+      <span class="ticker-item" data-ne-id="12">For The Culture</span>
+      <span class="ticker-item ticker-dot" data-ne-id="13">✦</span>
+      <span class="ticker-item" data-ne-id="14">MVP Events</span>
+      <span class="ticker-item ticker-dot" data-ne-id="15">✦</span>
+      <span class="ticker-item" data-ne-id="16">Afrotrap</span>
+      <span class="ticker-item ticker-dot" data-ne-id="17">✦</span>
+      <span class="ticker-item">Afrohouse</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Latino</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Hip Hop</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">R&B</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <!-- repeat for seamless loop -->
+      <span class="ticker-item">NJOYMNT</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">For The Culture</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">MVP Events</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Afrotrap</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Afrohouse</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Latino</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Hip Hop</span>
+      <span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">R&B</span>
+      <span class="ticker-item ticker-dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT ══ -->
+  <section class="section" id="about">
+    <div class="about-text reveal">
+      <p class="section-label" data-ne-id="40">Wer wir sind</p>
+      <h2 class="section-title" data-ne-id="42">Die Bewegung<br/>hinter der<br/>Musik</h2>
+      <p>NJOYMNT ist mehr als eine Partyreihe – es ist ein kulturelles Statement. Mitten in Wien bringen wir die Energie der Straße auf die Bühne: Afrotrap aus Paris, Afrohouse aus Lagos, Latino Vibes aus Bogotá, Trap, Hip Hop und R&amp;B aus der ganzen Welt.</p>
+      <p>MVP Events steht für Qualität, Atmosphäre und Authentizität. Jedes Event wird handgefertigt – von der Lineupauswahl bis zur letzten Lichteinstellung.</p>
+    </div>
+    <div class="about-stats reveal">
+      <div class="stat-item">
+        <div class="stat-number" data-ne-id="18">30+</div>
+        <div class="stat-label" data-ne-id="20">Events veranstaltet</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-ne-id="19">12K+</div>
+        <div class="stat-label" data-ne-id="21">Community Members</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">6</div>
+        <div class="stat-label" data-ne-id="22">Musikgenres</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">1</div>
+        <div class="stat-label" data-ne-id="23">Ziel: Culture First</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GENRE TAGS ══ -->
+  <div class="genre-section reveal" data-ne-id="39">
+    <p class="section-label" data-ne-id="41">Sound of NJOYMNT</p>
+    <h2 class="section-title" data-ne-id="44">Unser Soundtrack</h2>
+    <div class="genre-grid">
+      <div class="genre-tag">Afrotrap</div>
+      <div class="genre-tag">Afrohouse</div>
+      <div class="genre-tag">Latino</div>
+      <div class="genre-tag">Trap</div>
+      <div class="genre-tag">Hip Hop</div>
+      <div class="genre-tag">R&amp;B</div>
+      <div class="genre-tag">Amapiano</div>
+      <div class="genre-tag">Dancehall</div>
+      <div class="genre-tag">Drill</div>
+    </div>
+  </div>
+
+  <!-- ══ EVENTS ══ -->
+  <section class="section" id="events">
+    <p class="section-label reveal" data-ne-id="43">Upcoming</p>
+    <h2 class="section-title reveal">Nächste Events</h2>
+    <div class="events-grid">
+      <div class="event-card reveal">
+        <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80&auto=format" alt="NJOYMNT Vol. 7"/>
+        <div class="event-tag" data-ne-id="24">Sold Out</div>
+        <div class="event-card-overlay">
+          <div class="event-date" data-ne-id="25">15. Mai 2026 · Wien</div>
+          <div class="event-name" data-ne-id="26">NJOYMNT Vol. 7</div>
+          <div class="event-venue" data-ne-id="27">Flex · Donaukanal</div>
+          <button class="event-btn" data-ne-id="28">Info &amp; Tickets</button>
+        </div>
+      </div>
+      <div class="event-card reveal">
+        <img src="https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?w=800&q=80&auto=format" alt="NJOYMNT Summer"/>
+        <div class="event-tag" data-ne-id="29">Tickets live</div>
+        <div class="event-card-overlay">
+          <div class="event-date" data-ne-id="30">21. Juni 2026 · Wien</div>
+          <div class="event-name" data-ne-id="31">NJOYMNT Summer</div>
+          <div class="event-venue" data-ne-id="32">Pratersauna · Open Air</div>
+          <button class="event-btn" data-ne-id="33">Info &amp; Tickets</button>
+        </div>
+      </div>
+      <div class="event-card reveal">
+        <img src="https://images.unsplash.com/photo-1504680177321-2e6a879aac86?w=800&q=80&auto=format" alt="NJOYMNT X"/>
+        <div class="event-tag" data-ne-id="34">Coming soon</div>
+        <div class="event-card-overlay">
+          <div class="event-date" data-ne-id="35">TBA 2026 · Wien</div>
+          <div class="event-name" data-ne-id="36">NJOYMNT X</div>
+          <div class="event-venue" data-ne-id="37">Location TBA</div>
+          <button class="event-btn" data-ne-id="38">Remind me</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GALLERY STRIP ══ -->
+  <section class="section" id="gallery">
+    <p class="section-label reveal" data-ne-id="45">Momente</p>
+    <h2 class="section-title reveal">Gallery</h2>
+    <div class="gallery-strip" id="galleryStrip">
+      <img src="https://images.unsplash.com/photo-1496337589254-7e19d01cec44?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1468359601543-843bfaef291a?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1549418602-4948e7f5a781?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1614680376408-81e91ffe3db7?w=600&q=75&auto=format" alt=""/>
+      <img src="https://images.unsplash.com/photo-1504680177321-2e6a879aac86?w=600&q=75&auto=format" alt=""/>
+    </div>
+  </section>
+
+  <!-- ══ NEWSLETTER ══ -->
+  <section id="newsletter">
+    <p class="section-label reveal" data-ne-id="46">Bleib dabei</p>
+    <h2 class="section-title reveal">Kein Event<br/>mehr verpassen</h2>
+    <p class="reveal">Trag dich in unsere Liste ein und erhalte als Erste/r Updates zu Tickets, Line-ups &amp; Presales.</p>
+    <div class="newsletter-form reveal">
+      <input type="email" placeholder="deine@email.com" />
+      <button>Sign Up</button>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-logo">
+        NJO<span>Y</span>MNT
+        <small>by MVP Events · Vienna</small>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#events">Events</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Genres</h4>
+        <ul>
+          <li><a href="#">Afrotrap</a></li>
+          <li><a href="#">Afrohouse</a></li>
+          <li><a href="#">Latino</a></li>
+          <li><a href="#">Hip Hop &amp; R&B</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social</h4>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TikTok</a></li>
+          <li><a href="#">Spotify</a></li>
+          <li><a href="#">WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 MVP Events · NJOYMNT · All rights reserved</p>
+      <div class="footer-socials">
+        <a href="#">IG</a>
+        <a href="#">TT</a>
+        <a href="#">SP</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── NAVBAR SCROLL ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ── BURGER MENU ──
+    const burgerBtn = document.getElementById('burgerBtn');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const menuLinks = document.querySelectorAll('.menu-link');
+
+    burgerBtn.addEventListener('click', () => {
+      burgerBtn.classList.toggle('active');
+      menuOverlay.classList.toggle('open');
+      document.body.style.overflowY = menuOverlay.classList.contains('open') ? 'hidden' : '';
+    });
+
+    menuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        burgerBtn.classList.remove('active');
+        menuOverlay.classList.remove('open');
+        document.body.style.overflowY = '';
+      });
+    });
+
+    // ── HERO SWIPER ──
+    const wrapper = document.getElementById('slidesWrapper');
+    const dotsContainer = document.getElementById('slideDots');
+    const totalSlides = wrapper.children.length;
+    let current = 0;
+    let autoTimer;
+    let touchStartX = 0;
+
+    // Create dots
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    }
+
+    function goTo(index) {
+      current = (index + totalSlides) % totalSlides;
+      wrapper.style.transform = `translateX(-${current * 100}%)`;
+      document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+
+    function next() { goTo(current + 1); }
+
+    function startAuto() {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(next, 4500);
+    }
+
+    startAuto();
+
+    // Touch / drag swipe
+    const hero = document.getElementById('hero');
+    let isDragging = false, dragStartX = 0, dragDelta = 0;
+
+    hero.addEventListener('mousedown', e => { isDragging = true; dragStartX = e.clientX; });
+    hero.addEventListener('mousemove', e => { if (!isDragging) return; dragDelta = e.clientX - dragStartX; });
+    hero.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      if (Math.abs(dragDelta) > 60) dragDelta < 0 ? goTo(current + 1) : goTo(current - 1);
+      dragDelta = 0;
+      startAuto();
+    });
+    hero.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    hero.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) diff > 0 ? goTo(current + 1) : goTo(current - 1);
+      startAuto();
+    });
+
+    // ── GALLERY STRIP DRAG ──
+    const strip = document.getElementById('galleryStrip');
+    let isDown = false, startX, scrollLeft;
+
+    strip.addEventListener('mousedown', e => {
+      isDown = true;
+      startX = e.pageX - strip.offsetLeft;
+      scrollLeft = strip.scrollLeft;
+    });
+    strip.addEventListener('mouseleave', () => isDown = false);
+    strip.addEventListener('mouseup', () => isDown = false);
+    strip.addEventListener('mousemove', e => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - strip.offsetLeft;
+      strip.scrollLeft = scrollLeft - (x - startX) * 1.5;
+    });
+
+    // ── SCROLL REVEAL ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+<style>
+#NEB{position:fixed;bottom:28px;right:28px;z-index:999999;background:#C9A84C;color:#000;border:none;padding:14px 22px;font-family:sans-serif;font-size:13px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(0,0,0,.5);display:none!important;opacity:0!important;pointer-events:none!important;}
+#NEB:hover{background:#f0d080}
+#NEP{position:fixed;top:0;right:0;bottom:0;width:300px;z-index:999998;background:#141414;border-left:2px solid #C9A84C;display:none;flex-direction:column;}
+#NEP.on{display:flex;}
+.NEH{padding:16px;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.NEH h3{margin:0;color:#C9A84C;font-size:17px;font-family:sans-serif;}
+#NEX{background:none;border:1px solid #333;color:#fff;width:28px;height:28px;cursor:pointer;font-size:15px;}
+#NEX:hover{border-color:#C9A84C;color:#C9A84C}
+.NETABS{display:flex;border-bottom:1px solid #2a2a2a;flex-shrink:0;}
+.NETAB{flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,.35);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:sans-serif;cursor:pointer;}
+.NETAB.on{color:#C9A84C;border-bottom-color:#C9A84C;}
+.NEPANE{display:none;flex:1;overflow-y:auto;padding:12px;}
+.NEPANE.on{display:block;}
+.NESEC{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin:12px 0 5px;}
+.NESEC:first-child{margin-top:0}
+.NESLOT{border:1.5px dashed rgba(255,255,255,.12);margin-bottom:6px;cursor:pointer;background:rgba(255,255,255,.02);}
+.NESLOT:hover{border-color:#C9A84C;background:rgba(201,168,76,.05);}
+.NETHUMB{width:100%;height:64px;object-fit:cover;display:block;}
+.NEPH{height:64px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.25);font-size:11px;}
+.NEROW{padding:5px 9px;display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.05);}
+.NENAME{font-size:10px;color:rgba(255,255,255,.4);}
+.NEACT{font-size:9px;color:#C9A84C;text-transform:uppercase;}
+.NEFIELD{margin-bottom:9px;}
+.NELBL{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#C9A84C;margin-bottom:4px;}
+.NEINP{width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:8px 10px;font-size:13px;font-family:sans-serif;outline:none;}
+.NEINP:focus{border-color:#C9A84C;}
+.NEFOOT{padding:12px;border-top:1px solid #2a2a2a;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.NESAVE{background:#C9A84C;color:#000;border:none;padding:12px;width:100%;font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.NESAVE:hover{background:#f0d080}
+.NERES{background:none;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.1);padding:9px;width:100%;font-size:10px;cursor:pointer;text-transform:uppercase;}
+.NERES:hover{border-color:#C9A84C;color:#C9A84C}
+</style>
+
+<button id="NEB" onclick="NE_toggle()">&#9998; Edit</button>
+<input type="file" accept="image/*" id="NEF" style="display:none" onchange="NE_onFile(this)">
+
+<div id="NEP">
+  <div class="NEH">
+    <h3>&#9998; Editor</h3>
+    <button id="NEX" onclick="document.getElementById('NEP').classList.remove('on')">&#10005;</button>
+  </div>
+  <div class="NETABS">
+    <button class="NETAB on" onclick="NE_tab('NE-img',this)">&#128444; Images</button>
+    <button class="NETAB" onclick="NE_tab('NE-txt',this)">&#9997; Text</button>
+    <button class="NETAB" onclick="NE_tab('NE-clr',this)">&#127912; Colors</button>
+  </div>
+  <div id="NE-img" class="NEPANE on"></div>
+  <div id="NE-txt" class="NEPANE"></div>
+  <div id="NE-clr" class="NEPANE"></div>
+  <div class="NEFOOT">
+    <button class="NESAVE" onclick="NE_save()">&#128190; Save as HTML</button>
+    <button class="NERES" onclick="NE_reset()">&#8635; Reset All</button>
+    <p style="font-size:9px;color:rgba(255,255,255,.18);text-align:center;margin:0">Auto-saved in browser</p>
+  </div>
+</div>
+
+<script>
+var NE_imgs={},NE_txts={},NE_active=null;
+var NE_MW=[1400,1400,1400,1400,1400,800,800,800,700,700,700,700,700,700,700,700];
+var NE_SLBL=['Hero 1','Hero 2','Hero 3','Hero 4','Hero 5','Event 1','Event 2','Event 3','Gallery 1','Gallery 2','Gallery 3','Gallery 4','Gallery 5','Gallery 6','Gallery 7','Gallery 8'];
+
+var NE_GROUPS=[{t:'Hero Gallery',r:[0,4]},{t:'Event Cards',r:[5,7]},{t:'Gallery Strip',r:[8,15]}];
+function NE_pageImgs(){return Array.from(document.querySelectorAll('img:not(.NETHUMB)'));}
+
+function NE_toggle(){var p=document.getElementById('NEP');var o=!p.classList.contains('on');p.classList.toggle('on');if(o)NE_buildImgs();}
+function NE_tab(id,btn){document.querySelectorAll('.NETAB').forEach(function(t){t.classList.remove('on');});document.querySelectorAll('.NEPANE').forEach(function(p){p.classList.remove('on');});btn.classList.add('on');document.getElementById(id).classList.add('on');if(id==='NE-txt')NE_buildTxts();else if(id==='NE-clr')NE_buildColors();else NE_buildImgs();}
+function NE_compress(file,idx,cb){var mw=NE_MW[idx]||900;var rd=new FileReader();rd.onload=function(e){var im=new Image();im.onload=function(){var w=im.naturalWidth,h=im.naturalHeight;if(w>mw){h=Math.round(h*mw/w);w=mw;}var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(im,0,0,w,h);var out=cv.toDataURL('image/jpeg',0.82);var sv=Math.max(0,Math.round((1-(out.length*0.75)/file.size)*100));cb(out,w+'x'+h,'\u2193'+sv+'% - '+Math.round(out.length*0.75/1024)+'KB');};im.src=e.target.result;};rd.readAsDataURL(file);}
+function NE_applyImg(idx,src){var all=NE_pageImgs();if(all[idx])all[idx].src=src;}
+function NE_persist(){try{localStorage.setItem('NE_i',JSON.stringify(NE_imgs));}catch(e){}try{localStorage.setItem('NE_t',JSON.stringify(NE_txts));}catch(e){}}
+
+var NE_EDITABLE=[{"sec": "Navigation", "lbl": "Nav: Home", "cls": "menu-link", "idx": 0}, {"sec": "Navigation", "lbl": "Nav: About", "cls": "menu-link", "idx": 1}, {"sec": "Navigation", "lbl": "Nav: Events", "cls": "menu-link", "idx": 2}, {"sec": "Navigation", "lbl": "Nav: Gallery", "cls": "menu-link", "idx": 3}, {"sec": "Navigation", "lbl": "Nav: Newsletter", "cls": "menu-link", "idx": 4}, {"sec": "Navigation", "lbl": "Nav: Contact", "cls": "menu-link", "idx": 5}, {"sec": "Hero", "lbl": "Hero Label", "cls": "hero-label", "idx": 0}, {"sec": "Hero", "lbl": "Hero Sub-Text", "cls": "hero-sub", "idx": 0}, {"sec": "Hero", "lbl": "Button: Events", "cls": "btn-primary", "idx": 0}, {"sec": "Hero", "lbl": "Button: Gallery", "cls": "btn-outline", "idx": 0}, {"sec": "Ticker", "lbl": "Ticker 1", "cls": "ticker-item", "idx": 0}, {"sec": "Ticker", "lbl": "Ticker 2", "cls": "ticker-item", "idx": 1}, {"sec": "Ticker", "lbl": "Ticker 3", "cls": "ticker-item", "idx": 2}, {"sec": "Ticker", "lbl": "Ticker 4", "cls": "ticker-item", "idx": 3}, {"sec": "Ticker", "lbl": "Ticker 5", "cls": "ticker-item", "idx": 4}, {"sec": "Ticker", "lbl": "Ticker 6", "cls": "ticker-item", "idx": 5}, {"sec": "Ticker", "lbl": "Ticker 7", "cls": "ticker-item", "idx": 6}, {"sec": "Ticker", "lbl": "Ticker 8", "cls": "ticker-item", "idx": 7}, {"sec": "About", "lbl": "Stat: Events", "cls": "stat-number", "idx": 0}, {"sec": "About", "lbl": "Stat: Community", "cls": "stat-number", "idx": 1}, {"sec": "About", "lbl": "Label: Events", "cls": "stat-label", "idx": 0}, {"sec": "About", "lbl": "Label: Community", "cls": "stat-label", "idx": 1}, {"sec": "About", "lbl": "Label: Genres", "cls": "stat-label", "idx": 2}, {"sec": "About", "lbl": "Label: Mission", "cls": "stat-label", "idx": 3}, {"sec": "Events", "lbl": "Event 1: Tag", "cls": "event-tag", "idx": 0}, {"sec": "Events", "lbl": "Event 1: Datum", "cls": "event-date", "idx": 0}, {"sec": "Events", "lbl": "Event 1: Name", "cls": "event-name", "idx": 0}, {"sec": "Events", "lbl": "Event 1: Venue", "cls": "event-venue", "idx": 0}, {"sec": "Events", "lbl": "Event 1: Button", "cls": "event-btn", "idx": 0}, {"sec": "Events", "lbl": "Event 2: Tag", "cls": "event-tag", "idx": 1}, {"sec": "Events", "lbl": "Event 2: Datum", "cls": "event-date", "idx": 1}, {"sec": "Events", "lbl": "Event 2: Name", "cls": "event-name", "idx": 1}, {"sec": "Events", "lbl": "Event 2: Venue", "cls": "event-venue", "idx": 1}, {"sec": "Events", "lbl": "Event 2: Button", "cls": "event-btn", "idx": 1}, {"sec": "Events", "lbl": "Event 3: Tag", "cls": "event-tag", "idx": 2}, {"sec": "Events", "lbl": "Event 3: Datum", "cls": "event-date", "idx": 2}, {"sec": "Events", "lbl": "Event 3: Name", "cls": "event-name", "idx": 2}, {"sec": "Events", "lbl": "Event 3: Venue", "cls": "event-venue", "idx": 2}, {"sec": "Events", "lbl": "Event 3: Button", "cls": "event-btn", "idx": 2}, {"sec": "Newsletter", "lbl": "Newsletter Text", "cls": "reveal", "idx": 2}, {"sec": "Titles", "lbl": "Section: Wer wir sind", "cls": "section-label", "idx": 0}, {"sec": "Titles", "lbl": "Section: Sound", "cls": "section-label", "idx": 1}, {"sec": "Titles", "lbl": "Title: Soundtrack", "cls": "section-title", "idx": 0}, {"sec": "Titles", "lbl": "Section: Upcoming", "cls": "section-label", "idx": 2}, {"sec": "Titles", "lbl": "Title: Events", "cls": "section-title", "idx": 1}, {"sec": "Titles", "lbl": "Section: Gallery", "cls": "section-label", "idx": 3}, {"sec": "Titles", "lbl": "Section: Newsletter", "cls": "section-label", "idx": 4}];
+
+function NE_pageTxts(){return Array.from(document.querySelectorAll('[data-ne-id]'));}
+
+function NE_getEl(neid){return document.querySelector('[data-ne-id="'+neid+'"]');}
+
+function NE_buildTxts(){
+  var pane=document.getElementById('NE-txt');pane.innerHTML='';
+  var sections={};
+  NE_EDITABLE.forEach(function(f,i){
+    if(!sections[f.sec])sections[f.sec]=[];
+    sections[f.sec].push({i:i,lbl:f.lbl});
+  });
+  Object.keys(sections).forEach(function(sec){
+    var secDiv=document.createElement('div');secDiv.className='NESEC';secDiv.textContent=sec;pane.appendChild(secDiv);
+    sections[sec].forEach(function(f){
+      var el=NE_getEl(f.i);
+      var cur=NE_txts[f.i]!==undefined?NE_txts[f.i]:(el?el.textContent.trim():'');
+      var wrap=document.createElement('div');wrap.className='NEFIELD';
+      var lbl=document.createElement('div');lbl.className='NELBL';lbl.textContent=f.lbl;
+      var inp=document.createElement('input');inp.type='text';inp.className='NEINP';
+      inp.value=cur;inp.placeholder=f.lbl;inp.setAttribute('data-ti',f.i);
+      inp.oninput=function(){
+        var ti=+this.getAttribute('data-ti');
+        NE_txts[ti]=this.value;
+        var target=NE_getEl(ti);
+        if(target)target.textContent=this.value;
+        NE_persist();
+      };
+      wrap.appendChild(lbl);wrap.appendChild(inp);pane.appendChild(wrap);
+    });
+  });
+}
+
+function NE_restoreTxts(){
+  try{
+    var d=JSON.parse(localStorage.getItem('NE_t')||'{}');
+    Object.keys(d).forEach(function(k){
+      NE_txts[k]=d[k];
+      var el=NE_getEl(+k);if(el)el.textContent=d[k];
+    });
+  }catch(e){}
+}
+
+function NE_restore(){try{var d=JSON.parse(localStorage.getItem('NE_i')||'{}');Object.keys(d).forEach(function(k){NE_imgs[k]=d[k];NE_applyImg(+k,d[k]);});}catch(e){}NE_restoreTxts();}
+function NE_onFile(inp){if(inp.files[0]&&NE_active!==null){NE_openCrop(inp.files[0],NE_active);}inp.value='';}
+function NE_buildImgs(){var pane=document.getElementById('NE-img');pane.innerHTML='';NE_GROUPS.forEach(function(g){var sec=document.createElement('div');sec.className='NESEC';sec.textContent=g.t;pane.appendChild(sec);for(var i=g.r[0];i<=g.r[1];i++){(function(si){var saved=NE_imgs[si];var slot=document.createElement('div');slot.className='NESLOT';slot.setAttribute('data-i',si);slot.innerHTML=(saved?'<img class="NETHUMB" src="'+saved+'">'  :'<div class="NEPH">'+NE_SLBL[si]+' - click to upload</div>')+'<div class="NEROW"><span class="NENAME">'+NE_SLBL[si]+'</span><span class="NEACT">'+(saved?'Change':'Upload')+'</span></div>';slot.onclick=function(){NE_active=si;document.getElementById('NEF').click();};slot.addEventListener('dragover',function(e){e.preventDefault();slot.style.borderColor='#C9A84C';});slot.addEventListener('dragleave',function(){slot.style.borderColor='';});slot.addEventListener('drop',function(e){e.preventDefault();slot.style.borderColor='';var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){NE_active=si;NE_openCrop(f,si);}});pane.appendChild(slot);})(i);}});}
+
+function NE_save(){document.getElementById('NEP').classList.remove('on');setTimeout(function(){var h='<!DOCTYPE html>'+document.documentElement.outerHTML;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download='NJOYMNT_custom.html';document.body.appendChild(a);a.click();document.body.removeChild(a);},300);}
+function NE_reset(){if(!confirm('Alle Aenderungen zuruecksetzen?'))return;try{localStorage.removeItem('NE_i');localStorage.removeItem('NE_t');}catch(e){}location.reload();}
+NE_restore();
+</script>
+
+
+<style>
+#NE-crop-overlay{position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#NE-crop-overlay.on{display:flex;}
+#NE-crop-wrap{position:relative;overflow:hidden;cursor:crosshair;max-width:90vw;max-height:70vh;user-select:none;}
+#NE-crop-img{display:block;max-width:90vw;max-height:70vh;pointer-events:none;}
+#NE-crop-box{position:absolute;border:2px solid #C9A84C;box-shadow:0 0 0 9999px rgba(0,0,0,.55);box-sizing:border-box;cursor:move;}
+#NE-crop-box::after{content:'';position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;}
+.NE-crop-grid-line-h{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.25);}
+.NE-crop-grid-line-v{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.25);}
+#NE-crop-handles span{position:absolute;width:12px;height:12px;background:#C9A84C;border:1px solid #000;}
+#NE-crop-actions{display:flex;gap:10px;}
+.NE-crop-btn{padding:11px 28px;font-family:sans-serif;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;}
+#NE-crop-confirm{background:#C9A84C;color:#000;}
+#NE-crop-confirm:hover{background:#f0d080;}
+#NE-crop-cancel{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);}
+#NE-crop-cancel:hover{border-color:#C9A84C;color:#C9A84C;}
+#NE-crop-info{color:rgba(255,255,255,.45);font-family:sans-serif;font-size:11px;letter-spacing:1px;}
+#NE-crop-ratio{display:flex;gap:8px;}
+.NE-ratio-btn{padding:6px 14px;font-family:sans-serif;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.45);cursor:pointer;}
+.NE-ratio-btn.on{border-color:#C9A84C;color:#C9A84C;background:rgba(201,168,76,.1);}
+</style>
+
+<div id="NE-crop-overlay">
+  <div id="NE-crop-ratio">
+    <button class="NE-ratio-btn on" onclick="NE_setRatio(0)" id="NE-r-free">Free</button>
+    <button class="NE-ratio-btn" onclick="NE_setRatio(16/9)" id="NE-r-169">16:9</button>
+    <button class="NE-ratio-btn" onclick="NE_setRatio(1)" id="NE-r-11">1:1</button>
+    <button class="NE-ratio-btn" onclick="NE_setRatio(4/5)" id="NE-r-45">4:5</button>
+    <button class="NE-ratio-btn" onclick="NE_setRatio(3/4)" id="NE-r-34">3:4</button>
+  </div>
+  <div id="NE-crop-wrap">
+    <img id="NE-crop-img" src="" alt=""/>
+    <div id="NE-crop-box">
+      <div class="NE-crop-grid-line-h" style="top:33%"></div>
+      <div class="NE-crop-grid-line-h" style="top:66%"></div>
+      <div class="NE-crop-grid-line-v" style="left:33%"></div>
+      <div class="NE-crop-grid-line-v" style="left:66%"></div>
+    </div>
+  </div>
+  <div id="NE-crop-info">Drag to reposition &nbsp;|&nbsp; Corners to resize</div>
+  <div id="NE-crop-actions">
+    <button class="NE-crop-btn" id="NE-crop-cancel" onclick="NE_cropCancel()">Cancel</button>
+    <button class="NE-crop-btn" id="NE-crop-confirm" onclick="NE_cropConfirm()">&#10003; Use this crop</button>
+  </div>
+</div>
+
+<script>
+var NE_cropRatio=0, NE_cropFile=null, NE_cropIdx=null;
+var NE_cropNaturalW=0, NE_cropNaturalH=0;
+var NE_cropDispW=0, NE_cropDispH=0;
+var NE_cropBox={x:0,y:0,w:0,h:0};
+var NE_cropDrag=null;
+
+function NE_setRatio(r){
+  NE_cropRatio=r;
+  document.querySelectorAll('.NE-ratio-btn').forEach(function(b){b.classList.remove('on');});
+  var map={0:'NE-r-free',1.7778:'NE-r-169',1:'NE-r-11',0.8:'NE-r-45',0.75:'NE-r-34'};
+  var key=Math.round(r*10000)/10000;
+  var id=map[key]||'NE-r-free';
+  var el=document.getElementById(id);
+  if(el)el.classList.add('on');
+  if(r>0) NE_enforceRatio();
+}
+
+function NE_enforceRatio(){
+  if(NE_cropRatio===0)return;
+  var b=NE_cropBox, dw=NE_cropDispW, dh=NE_cropDispH;
+  var newH=Math.round(b.w/NE_cropRatio);
+  if(b.y+newH>dh) newH=dh-b.y;
+  NE_cropBox.h=newH;
+  NE_cropBox.w=Math.round(newH*NE_cropRatio);
+  if(NE_cropBox.x+NE_cropBox.w>dw) NE_cropBox.x=dw-NE_cropBox.w;
+  NE_renderBox();
+}
+
+function NE_renderBox(){
+  var box=document.getElementById('NE-crop-box');
+  box.style.left=NE_cropBox.x+'px';
+  box.style.top=NE_cropBox.y+'px';
+  box.style.width=NE_cropBox.w+'px';
+  box.style.height=NE_cropBox.h+'px';
+}
+
+function NE_openCrop(file, idx){
+  NE_cropFile=file; NE_cropIdx=idx;
+  var url=URL.createObjectURL(file);
+  var img=document.getElementById('NE-crop-img');
+  img.onload=function(){
+    NE_cropNaturalW=img.naturalWidth;
+    NE_cropNaturalH=img.naturalHeight;
+    NE_cropDispW=img.offsetWidth;
+    NE_cropDispH=img.offsetHeight;
+    var pad=20;
+    NE_cropBox={x:pad,y:pad,w:NE_cropDispW-pad*2,h:NE_cropDispH-pad*2};
+    if(NE_cropRatio>0){
+      NE_cropBox.h=Math.round(NE_cropBox.w/NE_cropRatio);
+      if(NE_cropBox.h>NE_cropDispH-pad*2){
+        NE_cropBox.h=NE_cropDispH-pad*2;
+        NE_cropBox.w=Math.round(NE_cropBox.h*NE_cropRatio);
+      }
+    }
+    NE_renderBox();
+    NE_attachCropEvents();
+  };
+  img.src=url;
+  document.getElementById('NE-crop-overlay').classList.add('on');
+}
+
+function NE_attachCropEvents(){
+  var wrap=document.getElementById('NE-crop-wrap');
+  var box=document.getElementById('NE-crop-box');
+  var dragData=null;
+
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+
+  box.onmousedown=function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragData={type:'move',sx:e.clientX,sy:e.clientY,bx:NE_cropBox.x,by:NE_cropBox.y};
+  };
+
+  wrap.onmousedown=function(e){
+    if(e.target===box||box.contains(e.target))return;
+    e.preventDefault();
+    var rect=wrap.getBoundingClientRect();
+    var sx=e.clientX-rect.left, sy=e.clientY-rect.top;
+    dragData={type:'new',sx:sx,sy:sy};
+    NE_cropBox={x:sx,y:sy,w:1,h:1};
+    NE_renderBox();
+  };
+
+  window.onmousemove=function(e){
+    if(!dragData)return;
+    var rect=wrap.getBoundingClientRect();
+    if(dragData.type==='move'){
+      var nx=dragData.bx+(e.clientX-dragData.sx);
+      var ny=dragData.by+(e.clientY-dragData.sy);
+      NE_cropBox.x=clamp(nx,0,NE_cropDispW-NE_cropBox.w);
+      NE_cropBox.y=clamp(ny,0,NE_cropDispH-NE_cropBox.h);
+    } else if(dragData.type==='new'){
+      var cx=clamp(e.clientX-rect.left,0,NE_cropDispW);
+      var cy=clamp(e.clientY-rect.top,0,NE_cropDispH);
+      var x=Math.min(dragData.sx,cx), y=Math.min(dragData.sy,cy);
+      var w=Math.abs(cx-dragData.sx), h=Math.abs(cy-dragData.sy);
+      if(NE_cropRatio>0){h=Math.round(w/NE_cropRatio);}
+      if(x+w>NE_cropDispW)w=NE_cropDispW-x;
+      if(y+h>NE_cropDispH)h=NE_cropDispH-y;
+      NE_cropBox={x:x,y:y,w:Math.max(20,w),h:Math.max(20,h)};
+    }
+    NE_renderBox();
+  };
+
+  window.onmouseup=function(){dragData=null;};
+
+  // Touch support
+  box.ontouchstart=function(e){
+    var t=e.touches[0]; e.preventDefault();
+    dragData={type:'move',sx:t.clientX,sy:t.clientY,bx:NE_cropBox.x,by:NE_cropBox.y};
+  };
+  window.ontouchmove=function(e){
+    if(!dragData)return; var t=e.touches[0];
+    if(dragData.type==='move'){
+      NE_cropBox.x=clamp(dragData.bx+(t.clientX-dragData.sx),0,NE_cropDispW-NE_cropBox.w);
+      NE_cropBox.y=clamp(dragData.by+(t.clientY-dragData.sy),0,NE_cropDispH-NE_cropBox.h);
+      NE_renderBox();
+    }
+  };
+  window.ontouchend=function(){dragData=null;};
+}
+
+function NE_cropConfirm(){
+  var img=document.getElementById('NE-crop-img');
+  var scaleX=NE_cropNaturalW/NE_cropDispW;
+  var scaleY=NE_cropNaturalH/NE_cropDispH;
+  var sx=Math.round(NE_cropBox.x*scaleX);
+  var sy=Math.round(NE_cropBox.y*scaleY);
+  var sw=Math.round(NE_cropBox.w*scaleX);
+  var sh=Math.round(NE_cropBox.h*scaleY);
+  var mw=NE_MW[NE_cropIdx]||900;
+  var ow=Math.min(sw,mw), oh=Math.round(sh*(ow/sw));
+  var cv=document.createElement('canvas'); cv.width=ow; cv.height=oh;
+  cv.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,ow,oh);
+  var out=cv.toDataURL('image/jpeg',0.85);
+  var badge=ow+'x'+oh+' px';
+  NE_imgs[NE_cropIdx]=out; NE_applyImg(NE_cropIdx,out); NE_persist();
+  var slot=document.querySelector('.NESLOT[data-i="'+NE_cropIdx+'"]');
+  if(slot){
+    var ph=slot.querySelector('.NEPH'); if(ph)ph.remove();
+    var th=slot.querySelector('.NETHUMB');
+    if(!th){th=document.createElement('img');th.className='NETHUMB';slot.prepend(th);}
+    th.src=out;
+    var row=slot.querySelector('.NEROW');
+    if(row)row.innerHTML='<span class="NENAME">'+badge+'</span><span class="NEACT" style="color:#4ade80">Cropped</span>';
+  }
+  document.getElementById('NE-crop-overlay').classList.remove('on');
+  URL.revokeObjectURL(img.src);
+}
+
+function NE_cropCancel(){
+  document.getElementById('NE-crop-overlay').classList.remove('on');
+  var img=document.getElementById('NE-crop-img');
+  URL.revokeObjectURL(img.src);
+}
+</script>
+
+
+<style>
+/* ── ADMIN LOGIN OVERLAY ── */
+#NE-login{position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+#NE-login.on{display:flex;}
+#NE-login-box{background:#141414;border:1px solid #C9A84C;padding:40px;width:320px;display:flex;flex-direction:column;gap:16px;align-items:center;}
+#NE-login-box h2{margin:0;color:#C9A84C;font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.15em;text-align:center;}
+#NE-login-box p{margin:0;color:rgba(255,255,255,.3);font-family:sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;}
+#NE-pw{width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-bottom:2px solid #C9A84C;color:#fff;padding:12px 14px;font-size:15px;font-family:sans-serif;outline:none;text-align:center;letter-spacing:3px;}
+#NE-pw::placeholder{color:rgba(255,255,255,.2);letter-spacing:1px;}
+#NE-pw-err{color:#ff4d6d;font-family:sans-serif;font-size:11px;letter-spacing:1px;display:none;}
+#NE-pw-err.on{display:block;}
+#NE-login-btn{width:100%;background:#C9A84C;color:#000;border:none;padding:13px;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:sans-serif;}
+#NE-login-btn:hover{background:#f0d080;}
+#NE-login-close{background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:sans-serif;}
+#NE-login-close:hover{color:#C9A84C;}
+
+/* ── COLOR EDITOR TAB ── */
+.NECFIELD{margin-bottom:12px;}
+.NECLBL{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#C9A84C;margin-bottom:6px;}
+.NECROW{display:flex;align-items:center;gap:8px;}
+.NECSWATCH{width:36px;height:36px;border:2px solid rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;border-radius:2px;}
+.NECSWATCH:hover{border-color:#C9A84C;}
+.NECINP{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:8px 10px;font-size:12px;font-family:sans-serif;outline:none;}
+.NECINP:focus{border-color:#C9A84C;}
+.NECPREV{font-size:10px;color:rgba(255,255,255,.3);margin-top:3px;}
+
+/* ── ADD COLOR TAB BUTTON ── */
+</style>
+
+<!-- ADMIN LOGIN OVERLAY -->
+<div id="NE-login">
+  <div id="NE-login-box">
+    <h2>Admin Access</h2>
+    <p>Enter password to unlock editor</p>
+    <input id="NE-pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')NE_tryLogin()">
+    <div id="NE-pw-err">Wrong password. Try again.</div>
+    <button id="NE-login-btn" onclick="NE_tryLogin()">Unlock Editor</button>
+    <button id="NE-login-close" onclick="NE_closeLogin()">Cancel</button>
+  </div>
+</div>
+
+<script>
+/* ── ADMIN AUTH ── */
+var NE_PASS_HASH = '8f40c51fde60a847194d06e65f41a257d8b87c2213666dbf76404348da10eb15';
+var NE_authed = false;
+var NE_failCount = 0;
+var NE_loginTarget = null;
+
+function NE_openLogin(target){
+  NE_loginTarget = target || 'toggle';
+  document.getElementById('NE-login').classList.add('on');
+  setTimeout(function(){ document.getElementById('NE-pw').focus(); }, 100);
+}
+function NE_closeLogin(){
+  document.getElementById('NE-login').classList.remove('on');
+  document.getElementById('NE-pw').value='';
+  document.getElementById('NE-pw-err').classList.remove('on');
+}
+function NE_tryLogin(){
+  var pw = document.getElementById('NE-pw').value;
+  var enc = new TextEncoder();
+  crypto.subtle.digest('SHA-256', enc.encode(pw)).then(function(buf){
+    var hex = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    if(hex === NE_PASS_HASH){
+      NE_authed = true;
+      NE_closeLogin();
+      try{ sessionStorage.setItem('NE_auth','1'); }catch(e){}
+      if(NE_loginTarget === 'toggle') NE_toggle();
+    } else {
+      NE_failCount = (NE_failCount||0) + 1;
+      var err = document.getElementById('NE-pw-err');
+      if(NE_failCount >= 3){
+        err.textContent = 'Too many attempts. Wait 30s.';
+        err.classList.add('on');
+        document.getElementById('NE-pw').disabled = true;
+        document.getElementById('NE-login-btn').disabled = true;
+        setTimeout(function(){
+          NE_failCount=0;
+          document.getElementById('NE-pw').disabled=false;
+          document.getElementById('NE-login-btn').disabled=false;
+          err.classList.remove('on');
+          err.textContent='Wrong password. Try again.';
+        }, 30000);
+      } else {
+        err.textContent = 'Wrong password. '+(3-NE_failCount)+' attempt(s) left.';
+        err.classList.add('on');
+        document.getElementById('NE-pw').value='';
+        document.getElementById('NE-pw').focus();
+        setTimeout(function(){ err.classList.remove('on'); }, 2500);
+      }
+    }
+  });
+}
+
+/* Check session auth on load */
+try{ if(sessionStorage.getItem('NE_auth')==='1') NE_authed=true; }catch(e){}
+
+/* Patch NE_toggle to require auth */
+var _NE_toggle_orig = NE_toggle;
+NE_toggle = function(){
+  if(!NE_authed){ NE_openLogin('toggle'); return; }
+  _NE_toggle_orig();
+};
+
+/* ── SECRET KEY COMBO: type "admin" anywhere ── */
+(function(){
+  var seq='', target='admin';
+  document.addEventListener('keydown', function(e){
+    seq += e.key.toLowerCase();
+    if(seq.length > target.length) seq = seq.slice(-target.length);
+    if(seq === target){
+      seq='';
+      if(!NE_authed){ NE_openLogin('toggle'); }
+      else { NE_toggle(); }
+    }
+  });
+})();
+
+/* ── COLOR EDITOR ── */
+var NE_COLORS = [
+  {id:'--gold',      lbl:'Gold (Akzent)',     val:'#C9A84C'},
+  {id:'--gold-light',lbl:'Gold Hell',         val:'#e8c97a'},
+  {id:'--black',     lbl:'Background Black',  val:'#080808'},
+  {id:'--dark',      lbl:'Dark Surface',      val:'#111111'},
+  {id:'--dark2',     lbl:'Dark Surface 2',    val:'#1a1a1a'},
+  {id:'--white',     lbl:'Text / White',      val:'#f5f5f5'},
+  {id:'--gray',      lbl:'Muted Text',        val:'#888888'},
+  {id:'--accent',    lbl:'Accent (Red)',      val:'#ff4d6d'}
+];
+
+var NE_colorVals = {};
+
+function NE_applyColors(){
+  var root = document.documentElement;
+  NE_COLORS.forEach(function(c){
+    var v = NE_colorVals[c.id] || c.val;
+    root.style.setProperty(c.id, v);
+  });
+}
+
+function NE_persistColors(){
+  try{ localStorage.setItem('NE_c', JSON.stringify(NE_colorVals)); }catch(e){}
+}
+
+function NE_restoreColors(){
+  try{
+    var d = JSON.parse(localStorage.getItem('NE_c') || '{}');
+    NE_colorVals = d;
+    NE_applyColors();
+  }catch(e){}
+}
+
+function NE_buildColors(){
+  var pane = document.getElementById('NE-clr'); pane.innerHTML='';
+
+  var resetBtn = document.createElement('button');
+  resetBtn.className='NERES';resetBtn.style.marginBottom='12px';resetBtn.style.width='100%';
+  resetBtn.textContent='Reset Colors';
+  resetBtn.onclick=function(){
+    NE_colorVals={};
+    NE_applyColors();
+    NE_persistColors();
+    NE_buildColors();
+  };
+  pane.appendChild(resetBtn);
+
+  NE_COLORS.forEach(function(c){
+    var cur = NE_colorVals[c.id] || c.val;
+    var wrap = document.createElement('div'); wrap.className='NECFIELD';
+    var lbl = document.createElement('div'); lbl.className='NECLBL'; lbl.textContent=c.lbl;
+    var row = document.createElement('div'); row.className='NECROW';
+
+    var swatch = document.createElement('input');
+    swatch.type='color'; swatch.className='NECSWATCH';
+    swatch.value=cur.length===7?cur:'#C9A84C';
+    swatch.title='Click to pick color';
+
+    var inp = document.createElement('input');
+    inp.type='text'; inp.className='NECINP';
+    inp.value=cur; inp.placeholder=c.val;
+
+    var prev = document.createElement('div');
+    prev.className='NECPREV'; prev.textContent='Default: '+c.val;
+
+    function update(val){
+      NE_colorVals[c.id]=val;
+      document.documentElement.style.setProperty(c.id, val);
+      NE_persistColors();
+    }
+
+    swatch.oninput=function(){
+      inp.value=this.value;
+      update(this.value);
+    };
+    inp.oninput=function(){
+      var v=this.value.trim();
+      if(/^#[0-9a-fA-F]{3,8}$/.test(v)||/^rgb/.test(v)){
+        if(v.length===7) swatch.value=v;
+        update(v);
+      }
+    };
+    inp.onblur=function(){
+      var v=this.value.trim();
+      if(!/^#[0-9a-fA-F]{3,8}$/.test(v)&&!/^rgb/.test(v)){
+        this.value=NE_colorVals[c.id]||c.val;
+      }
+    };
+
+    row.appendChild(swatch); row.appendChild(inp);
+    wrap.appendChild(lbl); wrap.appendChild(row); wrap.appendChild(prev);
+    pane.appendChild(wrap);
+  });
+}
+
+NE_restoreColors();
+</script>
+
+</body>
+</html>
