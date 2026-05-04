@@ -860,7 +860,12 @@
     @media (max-width: 900px) {
       #about { grid-template-columns: 1fr; gap: 50px; }
       .nav-links { display: none; }
-      .menu-inner { flex-direction: column; gap: 30px; align-items: flex-start; padding: 0 8%; }
+      .menu-inner { flex-direction: column; gap: 16px; align-items: center; padding: 0; justify-content: center; width: 100%; }
+      .menu-nav-list { width: 100%; text-align: center; }
+      .menu-nav-list li { overflow: visible; }
+      .menu-nav-list a { font-size: clamp(2.2rem, 11vw, 3.5rem); line-height: 1.2; }
+      .menu-side { display: none; }
+      .menu-line { display: none; }
       .menu-line { display: none; }
       .menu-side { height: auto; }
       .footer-top { flex-direction: column; }
@@ -869,6 +874,7 @@
         transform: translateX(50%);
         bottom: 6%;
       }
+
     }
 
     @media (max-width: 600px) {
@@ -896,10 +902,10 @@
     }
   </style>
 </head>
-<body>
+<body class="" style="">
 
   <!-- ══ NAVBAR ══ -->
-  <nav id="navbar">
+  <nav id="navbar" class="scrolled">
     <a href="#hero" class="nav-logo">NJO<span>Y</span>MNT</a>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
@@ -1032,13 +1038,13 @@
 
   <!-- ══ ABOUT ══ -->
   <section class="section" id="about">
-    <div class="about-text reveal">
+    <div class="about-text reveal visible">
       <p class="section-label" data-ne-id="40">Wer wir sind</p>
       <h2 class="section-title" data-ne-id="42">Die Bewegung<br>hinter der<br>Musik</h2>
       <p>NJOYMNT ist mehr als eine Partyreihe – es ist ein kulturelles Statement. Mitten in Innsbruck bringen wir die Energie der Straße auf die Bühne: Afrotrap aus Paris, Afrohouse aus Lagos, Latino Vibes aus Bogotá, Trap, Hip Hop und R&amp;B aus der ganzen Welt.</p>
       <p>MVP Events steht für Qualität, Atmosphäre und Authentizität. Jedes Event wird handgefertigt – von der Lineupauswahl bis zur letzten Lichteinstellung.</p>
     </div>
-    <div class="about-stats reveal">
+    <div class="about-stats reveal visible">
       <div class="stat-item">
         <div class="stat-number" data-ne-id="18">20+</div>
         <div class="stat-label" data-ne-id="20">Events veranstaltet</div>
