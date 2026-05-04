@@ -845,124 +845,64 @@
     .im-status.error { color: #f87171; }
 
   
-    @keyframes swipeShow {
-      0%   { opacity: 0; }
-      20%  { opacity: 1; }
-      75%  { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-    @keyframes arrowPulse {
-      0%,100% { opacity:0.2; transform:rotate(-45deg) translateY(0); }
       50%      { opacity:0.9; transform:rotate(-45deg) translateY(3px); }
     }
 
   
-    /* ── ADMIN PANEL (hidden, URL param ?admin=1) ── */
+  
+    /* ── ADMIN PANEL ── */
     #adminPanel {
       display: none;
       position: fixed; bottom: 0; left: 0; right: 0;
       z-index: 9900;
       background: #0d0d0d;
-      border-top: 2px solid var(--gold);
-      padding: 1.5rem 2rem;
+      border-top: 2px solid #C9A84C;
+      padding: 1.2rem 2rem 1.5rem;
       font-family: 'Inter', sans-serif;
-      animation: slideUp 0.4s ease;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+      max-height: 70vh;
+      overflow-y: auto;
     }
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
+    #adminPanel.open { display: block; animation: slideUpPanel 0.35s ease; }
+    @keyframes slideUpPanel {
+      from { transform: translateY(60px); opacity: 0; }
       to   { transform: translateY(0);    opacity: 1; }
     }
-    #adminPanel.visible { display: block; }
-    .admin-header {
+    .adm-head {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
-    .admin-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem; letter-spacing: 0.2em; color: var(--gold);
-    }
-    .admin-close {
-      background: none; border: 1px solid rgba(255,255,255,0.2);
-      color: white; cursor: pointer; padding: 0.3rem 0.8rem;
-      font-size: 0.8rem; letter-spacing: 0.15em;
-      transition: all 0.3s;
-    }
-    .admin-close:hover { border-color: var(--gold); color: var(--gold); }
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      max-height: 55vh;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--gold) transparent;
-      padding-bottom: 0.5rem;
-    }
-    .admin-slide-card {
-      background: #1a1a1a;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 1rem;
-      position: relative;
-    }
-    .admin-slide-label {
-      font-size: 0.65rem; letter-spacing: 0.25em; color: var(--gold);
-      text-transform: uppercase; margin-bottom: 0.6rem;
-    }
-    .admin-preview {
-      width: 100%; aspect-ratio: 16/9;
-      object-fit: cover;
-      background: #222; margin-bottom: 0.8rem;
-      display: block;
-    }
-    .admin-input-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
-    .admin-input {
-      width: 100%;
-      background: #111; border: 1px solid rgba(255,255,255,0.15);
-      color: white; padding: 0.5rem 0.7rem;
-      font-size: 0.75rem; font-family: 'Inter', sans-serif;
-      outline: none; transition: border-color 0.3s;
-    }
-    .admin-input:focus { border-color: var(--gold); }
-    .admin-input::placeholder { color: #555; }
-    .admin-apply-btn {
-      padding: 0.5rem;
-      background: var(--gold); color: var(--black);
-      border: none; cursor: pointer;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em;
-      text-transform: uppercase; width: 100%;
-      transition: background 0.3s;
-    }
-    .admin-apply-btn:hover { background: var(--gold-light); }
-    .admin-status {
-      font-size: 0.65rem; color: #4ade80; margin-top: 0.3rem;
-      min-height: 1rem; letter-spacing: 0.1em;
-    }
-    .admin-footer-row {
-      display: flex; gap: 1rem; margin-top: 1.2rem;
-      flex-wrap: wrap; align-items: center;
-    }
-    .admin-save-all {
-      padding: 0.7rem 2rem;
-      background: var(--gold); color: var(--black);
-      border: none; cursor: pointer;
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; transition: background 0.3s;
-    }
-    .admin-save-all:hover { background: var(--gold-light); }
-    .admin-hint {
-      font-size: 0.72rem; color: #666; line-height: 1.6;
-    }
-    .admin-hint a { color: var(--gold); text-decoration: none; }
-    .admin-badge {
-      position: fixed; bottom: 12px; right: 16px;
-      background: var(--gold); color: var(--black);
-      font-size: 0.6rem; letter-spacing: 0.2em;
-      padding: 0.3rem 0.6rem; z-index: 9901;
-      cursor: pointer; font-weight: 700;
-      display: none;
-    }
-    #adminPanel.visible ~ #adminBadge,
-    .admin-badge.visible { display: block; }
+    .adm-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.2em; color: #C9A84C; }
+    .adm-close { background: none; border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; padding: 0.3rem 0.9rem; font-size: 0.8rem; letter-spacing: 0.1em; transition: all 0.3s; }
+    .adm-close:hover { border-color: #C9A84C; color: #C9A84C; }
+    .adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+    .adm-card { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.08); padding: 0.9rem; }
+    .adm-lbl { font-size: 0.6rem; letter-spacing: 0.3em; color: #C9A84C; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .adm-prev { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #222; display: block; margin-bottom: 0.6rem; }
+    .adm-inp { width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 0.45rem 0.6rem; font-size: 0.72rem; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 0.4rem; box-sizing: border-box; }
+    .adm-inp:focus { border-color: #C9A84C; }
+    .adm-inp::placeholder { color: #555; }
+    .adm-apply { width: 100%; padding: 0.45rem; background: #C9A84C; color: #000; border: none; cursor: pointer; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; transition: background 0.2s; }
+    .adm-apply:hover { background: #F0D080; }
+    .adm-ok { font-size: 0.65rem; color: #4ade80; min-height: 1rem; margin-top: 0.25rem; letter-spacing: 0.1em; }
+    .adm-foot { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.07); }
+    .adm-btn { padding: 0.6rem 1.4rem; background: #C9A84C; color: #000; border: none; cursor: pointer; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; transition: background 0.2s; }
+    .adm-btn:hover { background: #F0D080; }
+    .adm-btn-sec { background: transparent; color: #C9A84C; border: 1px solid #C9A84C; }
+    .adm-btn-sec:hover { background: rgba(201,168,76,0.1); }
+    .adm-hint { font-size: 0.7rem; color: #666; line-height: 1.6; }
+    .adm-hint a { color: #C9A84C; text-decoration: none; }
+    #adminBadge { display: none; position: fixed; bottom: 14px; right: 16px; background: #C9A84C; color: #000; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; padding: 0.35rem 0.7rem; z-index: 9901; cursor: pointer; }
+    #adminBadge.on { display: block; }
+    /* Swipe hint */
+    #swipeHint { position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; pointer-events: none; animation: swipeAnim 2.8s ease forwards; }
+    @keyframes swipeAnim { 0%{opacity:0} 20%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
+    @keyframes arrowPulse { 0%,100%{opacity:0.2;transform:rotate(-45deg) translateY(0)} 50%{opacity:0.9;transform:rotate(-45deg) translateY(3px)} }
+    /* Guide modal */
+    #guideModal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; }
+    #guideModal.open { display:flex; }
+    .guide-box { background:#111; border:1px solid #C9A84C; padding:2rem; max-width:580px; width:90%; position:relative; max-height:85vh; overflow-y:auto; }
+    .guide-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:white; font-size:1.2rem; cursor:pointer; }
 
   </style>
 </head>
@@ -1063,12 +1003,10 @@
 </section>
 
 
-  <!-- Swipe Hint -->
-  <div id="swipeHint" style="
-    position:absolute; bottom:5%; left:50%; transform:translateX(-50%);
-    z-index:10; text-align:center; pointer-events:none;
-    animation: swipeShow 2.5s ease forwards;
-  ">
+  </div>
+
+
+  <div id="swipeHint">
     <span style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Swipe</span>
     <div style="display:flex;justify-content:center;gap:5px;margin-top:5px;">
       <span style="display:block;width:6px;height:6px;border-right:1.5px solid rgba(255,255,255,0.4);border-bottom:1.5px solid rgba(255,255,255,0.4);transform:rotate(-45deg);animation:arrowPulse 1s infinite;"></span>
@@ -1575,135 +1513,134 @@
   }
 
   
+
+
   // ══ ADMIN PANEL ══
-  const SLIDE_COUNT = 5;
-  const SLIDE_KEYS = Array.from({length: SLIDE_COUNT}, (_,i) => `njoymnt_slide_${i}`);
+  (function() {
+    const KEYS = [0,1,2,3,4].map(i => 'njoymnt_slide_' + i);
+    const LABELS = ['Hero Slide 1','Hero Slide 2','Hero Slide 3','Hero Slide 4','Hero Slide 5'];
+    const NO_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#222"/><text x="50%" y="50%" fill="#555" text-anchor="middle" dominant-baseline="middle" font-size="11">No Image</text></svg>');
 
-  // Slide metadata for admin labels
-  const slideLabels = [
-    'Hero Slide 1', 'Hero Slide 2', 'Hero Slide 3',
-    'Hero Slide 4', 'Hero Slide 5'
-  ];
-
-  let isAdminMode = false;
-
-  // Check URL param
-  function checkAdminMode() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('admin') === '1') {
-      isAdminMode = true;
-      document.getElementById('adminBadge').classList.add('visible');
-      buildAdminPanel();
-      toggleAdmin(true);
-    }
-  }
-
-  function toggleAdmin(open) {
-    const panel = document.getElementById('adminPanel');
-    if (open) {
-      panel.classList.add('visible');
-      document.body.style.paddingBottom = panel.offsetHeight + 40 + 'px';
-    } else {
-      panel.classList.remove('visible');
-      document.body.style.paddingBottom = '';
-    }
-  }
-
-  function buildAdminPanel() {
-    const grid = document.getElementById('adminGrid');
-    grid.innerHTML = '';
-    SLIDE_KEYS.forEach((key, i) => {
-      const savedUrl = localStorage.getItem(key) || '';
-      const card = document.createElement('div');
-      card.className = 'admin-slide-card';
-      card.innerHTML = `
-        <div class="admin-slide-label">Slide ${i+1} — ${slideLabels[i]}</div>
-        <img class="admin-preview" id="preview_${i}"
-          src="${savedUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%2290%22><rect width=%22160%22 height=%2290%22 fill=%22%23222%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23555%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2212%22>No Image</text></svg>'}"
-          alt="Preview slide ${i+1}"
-        />
-        <div class="admin-input-wrap">
-          <input class="admin-input" id="url_${i}" type="url"
-            placeholder="Paste image URL here..."
-            value="${savedUrl}"
-            oninput="previewInput(${i})"
-          />
-          <button class="admin-apply-btn" onclick="adminApply(${i})">Apply</button>
-          <div class="admin-status" id="status_${i}"></div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-
-    // Also apply any saved images on load
-    applySavedImages();
-  }
-
-  function previewInput(i) {
-    const url = document.getElementById(`url_${i}`).value.trim();
-    if (url) document.getElementById(`preview_${i}`).src = url;
-  }
-
-  function adminApply(i) {
-    const url = document.getElementById(`url_${i}`).value.trim();
-    const status = document.getElementById(`status_${i}`);
-    if (!url) { status.style.color='#f87171'; status.textContent = '⚠ Please enter a URL'; return; }
-
-    // Apply to slide
-    setSlideImage(i, url);
-    status.style.color = '#4ade80';
-    status.textContent = '✓ Applied live!';
-    setTimeout(() => status.textContent = '', 2500);
-  }
-
-  function setSlideImage(i, url) {
-    const slides = document.querySelectorAll('.gallery-slide');
-    if (slides[i]) {
-      slides[i].style.backgroundImage = `url('${url}')`;
+    function setSlideImage(i, url) {
+      const slides = document.querySelectorAll('.gallery-slide');
+      if (!slides[i]) return;
+      slides[i].style.backgroundImage = "url('" + url + "')";
       slides[i].style.backgroundSize = 'cover';
       slides[i].style.backgroundPosition = 'center';
-      // Hide SVG crowd overlay when real image is set
       const inner = slides[i].querySelector('.slide-inner');
-      if (inner) inner.style.display = 'none';
+      if (inner) inner.style.opacity = '0';
     }
-  }
 
-  function adminSaveAll() {
-    let saved = 0;
-    SLIDE_KEYS.forEach((key, i) => {
-      const url = document.getElementById(`url_${i}`)?.value.trim();
-      if (url) { localStorage.setItem(key, url); saved++; }
-    });
-    alert(`✓ ${saved} image(s) saved to LocalStorage.\nThey will load automatically next time you open the page.`);
-  }
+    function applySaved() {
+      KEYS.forEach((key, i) => {
+        const url = localStorage.getItem(key);
+        if (url) setSlideImage(i, url);
+      });
+    }
 
-  function applySavedImages() {
-    SLIDE_KEYS.forEach((key, i) => {
-      const url = localStorage.getItem(key);
-      if (url) setSlideImage(i, url);
-    });
-  }
+    function buildPanel() {
+      const grid = document.getElementById('admGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      KEYS.forEach((key, i) => {
+        const saved = localStorage.getItem(key) || '';
+        const card = document.createElement('div');
+        card.className = 'adm-card';
+        card.innerHTML =
+          '<div class="adm-lbl">Slide ' + (i+1) + ' — ' + LABELS[i] + '</div>' +
+          '<img class="adm-prev" id="ap_' + i + '" src="' + (saved || NO_IMG) + '" />' +
+          '<input class="adm-inp" id="au_' + i + '" type="url" placeholder="Image URL..." value="' + saved + '" />' +
+          '<button class="adm-apply" data-idx="' + i + '">Apply</button>' +
+          '<div class="adm-ok" id="aok_' + i + '"></div>';
+        grid.appendChild(card);
+      });
 
-  function adminExportConfig() {
-    const config = {};
-    SLIDE_KEYS.forEach((key, i) => {
-      const url = document.getElementById(`url_${i}`)?.value.trim()
-                  || localStorage.getItem(key) || '';
-      config[`slide_${i+1}`] = url;
-    });
-    const json = JSON.stringify(config, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      alert('✓ Config JSON copied to clipboard!\n\nPaste it into your HTML as a JS variable to hardcode the images permanently.');
-    });
-  }
+      // Input live preview
+      grid.querySelectorAll('.adm-inp').forEach((inp, i) => {
+        inp.addEventListener('input', function() {
+          if (this.value) document.getElementById('ap_' + i).src = this.value;
+        });
+      });
 
-  function showHostingGuide() {
-    document.getElementById('hostingModal').style.display = 'flex';
-  }
+      // Apply buttons
+      grid.querySelectorAll('.adm-apply').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const i = parseInt(this.dataset.idx);
+          const url = document.getElementById('au_' + i).value.trim();
+          const ok = document.getElementById('aok_' + i);
+          if (!url) { ok.style.color='#f87171'; ok.textContent='⚠ Enter a URL'; return; }
+          setSlideImage(i, url);
+          ok.style.color = '#4ade80';
+          ok.textContent = '✓ Applied!';
+          setTimeout(() => ok.textContent = '', 2500);
+        });
+      });
+    }
 
-  // Auto-apply saved images on page load (for visitors too)
-  applySavedImages();
-  checkAdminMode();
+    function openPanel() {
+      const p = document.getElementById('adminPanel');
+      p.classList.add('open');
+    }
+    function closePanel() {
+      document.getElementById('adminPanel').classList.remove('open');
+    }
+
+    function init() {
+      // Always apply saved images for all visitors
+      applySaved();
+
+      // Check if admin mode
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') !== '1') return;
+
+      // Show badge + build panel
+      const badge = document.getElementById('adminBadge');
+      if (badge) badge.classList.add('on');
+
+      buildPanel();
+      openPanel();
+
+      document.getElementById('admCloseBtn').addEventListener('click', closePanel);
+      document.getElementById('adminBadge').addEventListener('click', function() {
+        const p = document.getElementById('adminPanel');
+        if (p.classList.contains('open')) closePanel(); else openPanel();
+      });
+
+      document.getElementById('admSaveBtn').addEventListener('click', function() {
+        let n = 0;
+        KEYS.forEach((key, i) => {
+          const url = document.getElementById('au_' + i)?.value.trim();
+          if (url) { localStorage.setItem(key, url); n++; }
+        });
+        alert('✓ ' + n + ' Bild(er) gespeichert. Beim nächsten Öffnen automatisch geladen.');
+      });
+
+      document.getElementById('admExportBtn').addEventListener('click', function() {
+        const cfg = {};
+        KEYS.forEach((key, i) => {
+          cfg['slide_' + (i+1)] = document.getElementById('au_' + i)?.value.trim() || localStorage.getItem(key) || '';
+        });
+        navigator.clipboard.writeText(JSON.stringify(cfg, null, 2)).then(function() {
+          alert('✓ JSON in Zwischenablage kopiert!');
+        });
+      });
+
+      document.getElementById('admGuideLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('guideModal').classList.add('open');
+      });
+      document.getElementById('guideCloseBtn').addEventListener('click', function() {
+        document.getElementById('guideModal').classList.remove('open');
+      });
+    }
+
+    // Wait for DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
 
 </script>
 
@@ -1785,53 +1722,45 @@
   </div>
 
 
-<!-- ══ ADMIN PANEL (only visible via ?admin=1) ══ -->
+
+<!-- ADMIN PANEL -->
 <div id="adminPanel">
-  <div class="admin-header">
-    <span class="admin-title">⚙ NJOYMNT — Image Manager</span>
-    <button class="admin-close" onclick="toggleAdmin(false)">✕ Close</button>
+  <div class="adm-head">
+    <span class="adm-title">⚙ NJOYMNT Image Manager</span>
+    <button class="adm-close" id="admCloseBtn">✕ Close</button>
   </div>
-  <div class="admin-grid" id="adminGrid">
-    <!-- Cards injected by JS -->
-  </div>
-  <div class="admin-footer-row">
-    <button class="admin-save-all" onclick="adminSaveAll()">💾 Save All to LocalStorage</button>
-    <button class="admin-save-all" style="background:#222;color:var(--gold);border:1px solid var(--gold);" onclick="adminExportConfig()">📋 Copy Config JSON</button>
-    <p class="admin-hint">
-      Paste any <strong>public image URL</strong> (Google Drive direct-link, Dropbox, Unsplash, etc.).<br>
-      Images are saved in your browser. For permanent hosting → see <a href="#" onclick="showHostingGuide()">Hosting Guide</a>.
-    </p>
+  <div class="adm-grid" id="admGrid"></div>
+  <div class="adm-foot">
+    <button class="adm-btn" id="admSaveBtn">💾 Save All</button>
+    <button class="adm-btn adm-btn-sec" id="admExportBtn">📋 Copy JSON</button>
+    <p class="adm-hint">Paste public image URL (Google Drive, Dropbox, Unsplash…) — <a href="#" id="admGuideLink">Hosting Guide</a></p>
   </div>
 </div>
 
-<!-- Admin badge (only in admin mode) -->
-<div class="admin-badge" id="adminBadge" onclick="toggleAdmin(true)">ADMIN</div>
+<div id="adminBadge">ADMIN ▲</div>
 
-<!-- Hosting Guide Modal -->
-<div id="hostingModal" style="
-  display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
-">
-  <div style="background:#111; border:1px solid var(--gold); padding:2.5rem; max-width:600px; width:90%; position:relative;">
-    <button onclick="document.getElementById('hostingModal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;">✕</button>
-    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.15em;color:var(--gold);margin-bottom:1.5rem;">Image Hosting Guide</h3>
+<!-- HOSTING GUIDE MODAL -->
+<div id="guideModal">
+  <div class="guide-box">
+    <button class="guide-close" id="guideCloseBtn">✕</button>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.15em;color:#C9A84C;margin-bottom:1.2rem;">Image Hosting Guide</h3>
     <div style="font-size:0.85rem;line-height:1.9;color:#ccc;">
-      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option A — Google Drive</p>
-      <ol style="padding-left:1.2rem;margin-bottom:1.5rem;">
-        <li>Upload your photo to Google Drive</li>
-        <li>Right-click → <strong>Share</strong> → Anyone with the link → <strong>Viewer</strong></li>
-        <li>Copy the file ID from the URL: <code style="color:var(--gold)">drive.google.com/file/d/<strong>FILE_ID</strong>/view</code></li>
-        <li>Use this URL format: <code style="color:var(--gold)">https://drive.google.com/uc?export=view&amp;id=FILE_ID</code></li>
+      <p style="color:#C9A84C;font-weight:600;margin-bottom:0.4rem;">Google Drive</p>
+      <ol style="padding-left:1.2rem;margin-bottom:1.2rem;">
+        <li>Upload Foto zu Google Drive</li>
+        <li>Rechtsklick → Freigeben → Jeder mit Link → Betrachter</li>
+        <li>File ID aus URL kopieren: <code style="color:#C9A84C">drive.google.com/file/d/<b>FILE_ID</b>/view</code></li>
+        <li>URL Format: <code style="color:#C9A84C">https://drive.google.com/uc?export=view&id=FILE_ID</code></li>
       </ol>
-      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option B — Dropbox</p>
-      <ol style="padding-left:1.2rem;margin-bottom:1.5rem;">
-        <li>Upload photo to Dropbox</li>
-        <li>Click <strong>Share</strong> → Copy Link</li>
-        <li>Change <code style="color:var(--gold)">?dl=0</code> → <code style="color:var(--gold)">?raw=1</code> at the end of the URL</li>
-        <li>Paste the modified URL into the admin panel</li>
+      <p style="color:#C9A84C;font-weight:600;margin-bottom:0.4rem;">Dropbox</p>
+      <ol style="padding-left:1.2rem;margin-bottom:1.2rem;">
+        <li>Foto zu Dropbox hochladen</li>
+        <li>Link kopieren</li>
+        <li><code style="color:#C9A84C">?dl=0</code> am Ende zu <code style="color:#C9A84C">?raw=1</code> ändern</li>
+        <li>Fertige URL ins Admin Panel einfügen</li>
       </ol>
-      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option C — Paste direct URL from anywhere</p>
-      <p>Any publicly accessible image URL works — Unsplash, Imgur, your own server, CDN, etc.</p>
+      <p style="color:#C9A84C;font-weight:600;margin-bottom:0.4rem;">Direkte URL</p>
+      <p>Jeden öffentlichen Bild-Link direkt einfügen (Unsplash, Imgur, eigener Server, CDN).</p>
     </div>
   </div>
 </div>
