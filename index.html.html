@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NJOYMNT – MVP Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #F0D080;
+      --black: #0A0A0A;
+      --dark: #111111;
+      --dark2: #1A1A1A;
+      --white: #FFFFFF;
+      --gray: #888888;
+      --gray-light: #CCCCCC;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      position: fixed; inset: 0;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    #loader.hide { opacity: 0; visibility: hidden; }
+    .loader-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 7rem);
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.97); }
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 2.5rem;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+    nav.scrolled {
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--white); font-size: 0.75rem; display: block; letter-spacing: 0.3em; margin-top: -4px; }
+
+    /* ── BURGER ── */
+    .burger {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      width: 48px; height: 48px; cursor: pointer; gap: 6px; z-index: 1100;
+      background: none; border: none; padding: 0;
+    }
+    .burger span {
+      display: block; width: 28px; height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-origin: center;
+    }
+    .burger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); background: var(--gold); }
+    .burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .burger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); background: var(--gold); }
+
+    /* ── FULLSCREEN MENU ── */
+    #fullmenu {
+      position: fixed; inset: 0;
+      background: var(--black);
+      z-index: 1050;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      overflow: hidden;
+    }
+    #fullmenu::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    #fullmenu.open { opacity: 1; visibility: visible; }
+    .menu-links { list-style: none; text-align: center; }
+    .menu-links li {
+      overflow: hidden;
+      margin: 0.4rem 0;
+    }
+    .menu-links li a {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+      display: inline-block;
+      transform: translateY(110%);
+      transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), color 0.3s ease;
+      position: relative;
+    }
+    .menu-links li a::after {
+      content: '';
+      position: absolute; left: 0; bottom: 0;
+      width: 0; height: 2px;
+      background: var(--gold);
+      transition: width 0.4s ease;
+    }
+    .menu-links li a:hover { color: var(--gold); }
+    .menu-links li a:hover::after { width: 100%; }
+    #fullmenu.open .menu-links li a {
+      transform: translateY(0);
+    }
+    #fullmenu.open .menu-links li:nth-child(1) a { transition-delay: 0.05s; }
+    #fullmenu.open .menu-links li:nth-child(2) a { transition-delay: 0.10s; }
+    #fullmenu.open .menu-links li:nth-child(3) a { transition-delay: 0.15s; }
+    #fullmenu.open .menu-links li:nth-child(4) a { transition-delay: 0.20s; }
+    #fullmenu.open .menu-links li:nth-child(5) a { transition-delay: 0.25s; }
+    #fullmenu.open .menu-links li:nth-child(6) a { transition-delay: 0.30s; }
+    #fullmenu.open .menu-links li:nth-child(7) a { transition-delay: 0.35s; }
+
+    .menu-footer {
+      position: absolute; bottom: 2.5rem;
+      display: flex; gap: 2rem;
+    }
+    .menu-footer a {
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .menu-footer a:hover { color: var(--gold); }
+
+    /* ── HERO GALLERY ── */
+    #hero {
+      position: relative;
+      height: 100vh; min-height: 600px;
+      overflow: hidden;
+    }
+    .gallery-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    .gallery-slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .gallery-slide .slide-bg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scale(1.05);
+      transition: transform 6s ease;
+    }
+    .gallery-slide.active .slide-bg { transform: scale(1); }
+    .gallery-slide::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10,10,10,0.3) 0%,
+        rgba(10,10,10,0.1) 40%,
+        rgba(10,10,10,0.7) 80%,
+        rgba(10,10,10,0.95) 100%
+      );
+    }
+
+    /* Slide colors as bg (placeholder) */
+    .slide-1 { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #0a0a1a 100%); }
+    .slide-2 { background: linear-gradient(135deg, #1a1000 0%, #3d2800 40%, #0a0800 100%); }
+    .slide-3 { background: linear-gradient(135deg, #0a1a0a 0%, #1a3a1a 40%, #0a0a0a 100%); }
+    .slide-4 { background: linear-gradient(135deg, #1a0a0a 0%, #3a1010 40%, #0a0a0a 100%); }
+    .slide-5 { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 40%, #0a0a0a 100%); }
+
+    /* Crowd silhouette overlay per slide */
+    .slide-inner {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+    }
+    .crowd-svg { width: 100%; max-width: 900px; opacity: 0.25; filter: blur(0.5px); }
+
+    .hero-content {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 10;
+      padding: 0 2.5rem 3.5rem;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .hero-tag {
+      font-size: 0.7rem; letter-spacing: 0.35em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 0.8rem;
+      animation: fadeUp 1s ease 0.3s both;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 14vw, 11rem);
+      line-height: 0.9;
+      letter-spacing: 0.05em;
+      animation: fadeUp 1s ease 0.5s both;
+    }
+    .hero-title .gold { color: var(--gold); }
+    .hero-sub {
+      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+      letter-spacing: 0.3em;
+      color: var(--gray-light);
+      text-transform: uppercase;
+      margin-top: 0.8rem;
+      animation: fadeUp 1s ease 0.7s both;
+    }
+    .hero-ctas {
+      display: flex; gap: 1rem; margin-top: 2rem;
+      animation: fadeUp 1s ease 0.9s both;
+      flex-wrap: wrap;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.9rem 2rem;
+      font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase;
+      font-weight: 600; text-decoration: none;
+      cursor: pointer; border: none;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: var(--black);
+    }
+    .btn-gold:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(201,168,76,0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    /* Gallery dots */
+    .gallery-dots {
+      position: absolute; bottom: 3.5rem; right: 2.5rem;
+      display: flex; flex-direction: column; gap: 6px;
+      z-index: 10;
+    }
+    .dot {
+      width: 4px; height: 20px; border-radius: 2px;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+    .dot.active { background: var(--gold); height: 36px; }
+
+    /* Gallery arrows */
+    .gallery-arrow {
+      position: absolute; top: 50%; z-index: 10;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);
+      color: white; font-size: 1.2rem;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+    }
+    .gallery-arrow:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+    .arrow-prev { left: 1.5rem; }
+    .arrow-next { right: 4.5rem; }
+
+    /* ── TICKER ── */
+    .ticker-wrap {
+      background: var(--gold);
+      overflow: hidden; white-space: nowrap;
+      padding: 0.65rem 0;
+    }
+    .ticker-inner {
+      display: inline-flex; gap: 3rem;
+      animation: ticker 20s linear infinite;
+    }
+    .ticker-inner span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: 0.2em;
+      color: var(--black);
+    }
+    .ticker-inner span.dot-sep { color: var(--black); opacity: 0.5; }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 2.5rem; }
+    .section-label {
+      font-size: 0.65rem; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+    .gold-line {
+      width: 50px; height: 2px;
+      background: var(--gold);
+      margin: 1.5rem 0;
+    }
+
+    /* ── UPCOMING EVENT ── */
+    #event { background: var(--dark); }
+    .event-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      margin-top: 3rem;
+      align-items: start;
+    }
+    .event-visual {
+      position: relative;
+      aspect-ratio: 3/4;
+      background: var(--dark2);
+      overflow: hidden;
+    }
+    .event-visual-bg {
+      width: 100%; height: 100%;
+      background: linear-gradient(160deg, #1a0a2e 0%, #2d1a00 60%, #0a0a0a 100%);
+    }
+    .event-badge {
+      position: absolute; top: 1.5rem; left: 1.5rem;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+      font-weight: 700; padding: 0.4rem 0.8rem;
+    }
+    .event-visual-title {
+      position: absolute; bottom: 2rem; left: 1.5rem; right: 1.5rem;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; line-height: 1;
+      letter-spacing: 0.1em;
+    }
+    .event-meta { display: flex; flex-direction: column; gap: 2rem; }
+    .meta-row {
+      display: flex; align-items: flex-start; gap: 1.2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .meta-icon {
+      width: 40px; height: 40px;
+      background: rgba(201,168,76,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .meta-label { font-size: 0.65rem; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; margin-bottom: 0.3rem; }
+    .meta-value { font-size: 1rem; font-weight: 500; }
+    .meta-sub { font-size: 0.8rem; color: var(--gray); margin-top: 0.2rem; }
+    .ticket-status {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #4ade80;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── MUSIC VIBES ── */
+    #vibes { background: var(--black); }
+    .vibes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      margin-top: 3rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .vibe-card {
+      padding: 2.5rem 1.5rem;
+      background: var(--dark);
+      cursor: default;
+      transition: all 0.4s ease;
+      position: relative; overflow: hidden;
+    }
+    .vibe-card::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .vibe-card:hover { background: var(--dark2); transform: translateY(-4px); }
+    .vibe-card:hover::before { transform: scaleX(1); }
+    .vibe-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem; letter-spacing: 0.3em;
+      color: var(--gold); opacity: 0.6;
+      margin-bottom: 1rem;
+    }
+    .vibe-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; letter-spacing: 0.1em;
+      line-height: 1.1;
+    }
+    .vibe-desc { font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem; line-height: 1.5; }
+
+    /* ── ABOUT ── */
+    #about { background: var(--dark); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      margin-top: 3rem;
+      align-items: center;
+    }
+    .about-text p {
+      color: var(--gray-light);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+    .about-text p span { color: var(--gold); }
+    .stats-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
+    .stat-item {}
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; color: var(--gold); line-height: 1;
+    }
+    .stat-label { font-size: 0.7rem; letter-spacing: 0.25em; color: var(--gray); text-transform: uppercase; margin-top: 0.3rem; }
+    .about-visual {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .about-img {
+      aspect-ratio: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .about-img:first-child { grid-column: span 2; aspect-ratio: 2/1; }
+    .about-img-bg {
+      width: 100%; height: 100%;
+      transition: transform 0.6s ease;
+    }
+    .about-img:hover .about-img-bg { transform: scale(1.05); }
+    .ab1 { background: linear-gradient(135deg, #2d1b4e, #0a0a1a); }
+    .ab2 { background: linear-gradient(135deg, #3d2800, #1a0a00); }
+    .ab3 { background: linear-gradient(135deg, #1a3a1a, #0a0a0a); }
+
+    /* ── GALLERY SECTION ── */
+    #gallery { background: var(--black); padding-bottom: 0; }
+    .gallery-section-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 3rem;
+    }
+    .gs-item {
+      overflow: hidden; position: relative; cursor: pointer;
+    }
+    .gs-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+    .gs-item-bg {
+      width: 100%; aspect-ratio: 1;
+      transition: transform 0.6s ease;
+    }
+    .gs-item:nth-child(1) .gs-item-bg { aspect-ratio: 1; }
+    .gs-item:hover .gs-item-bg { transform: scale(1.06); }
+    .gs-item::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(10,10,10,0.4);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .gs-item:hover::after { opacity: 1; }
+    .gi1 { background: linear-gradient(160deg, #2d1b4e 0%, #0a0a0a 100%); }
+    .gi2 { background: linear-gradient(160deg, #3d2800 0%, #0a0a0a 100%); }
+    .gi3 { background: linear-gradient(160deg, #1a3a1a 0%, #0a0a0a 100%); }
+    .gi4 { background: linear-gradient(160deg, #3a1010 0%, #0a0a0a 100%); }
+    .gi5 { background: linear-gradient(160deg, #1a1a3a 0%, #0a0a0a 100%); }
+    .gi6 { background: linear-gradient(160deg, #2d1b4e 0%, #1a0a00 100%); }
+    .gi7 { background: linear-gradient(160deg, #0a1a0a 0%, #3d2800 100%); }
+
+    /* ── TICKETS ── */
+    #tickets { background: var(--dark); }
+    .tickets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      margin-top: 3rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .ticket-card {
+      background: var(--dark2);
+      padding: 2.5rem;
+      position: relative; overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    .ticket-card:hover { transform: translateY(-4px); }
+    .ticket-card.featured {
+      background: var(--gold);
+    }
+    .ticket-card.featured * { color: var(--black) !important; }
+    .ticket-card.featured .ticket-price { color: var(--black) !important; }
+    .ticket-tier {
+      font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1rem;
+    }
+    .ticket-card.featured .ticket-tier { color: rgba(0,0,0,0.6) !important; }
+    .ticket-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; line-height: 1; color: var(--white);
+    }
+    .ticket-price span { font-size: 1.5rem; }
+    .ticket-includes {
+      list-style: none; margin: 1.5rem 0;
+    }
+    .ticket-includes li {
+      font-size: 0.85rem; color: var(--gray-light);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .ticket-card.featured .ticket-includes li { color: rgba(0,0,0,0.8) !important; border-color: rgba(0,0,0,0.1) !important; }
+    .ticket-includes li::before { content: '✦'; font-size: 0.6rem; color: var(--gold); }
+    .ticket-card.featured .ticket-includes li::before { color: var(--black) !important; }
+
+    /* ── FAQ ── */
+    #faq { background: var(--black); }
+    .faq-list { margin-top: 3rem; }
+    .faq-item {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .faq-q {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.5rem 0; cursor: pointer;
+      font-size: 1rem; font-weight: 500;
+      transition: color 0.3s;
+      list-style: none;
+    }
+    .faq-q:hover { color: var(--gold); }
+    .faq-icon {
+      width: 28px; height: 28px;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+      transition: all 0.4s ease;
+      color: var(--gold);
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); border-color: var(--gold); background: var(--gold); color: var(--black); }
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.5s ease, padding 0.3s ease;
+    }
+    .faq-a p {
+      padding-bottom: 1.5rem;
+      color: var(--gray);
+      line-height: 1.8;
+      font-size: 0.9rem;
+    }
+    .faq-item.open .faq-a { max-height: 300px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      padding: 4rem 2.5rem 2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-top {
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 4rem; margin-bottom: 3rem;
+    }
+    .footer-brand-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem; letter-spacing: 0.2em; color: var(--gold);
+    }
+    .footer-brand-sub { font-size: 0.7rem; letter-spacing: 0.3em; color: var(--gray); text-transform: uppercase; }
+    .footer-desc { color: var(--gray); font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; max-width: 300px; }
+    .footer-col h4 { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.6rem; }
+    .footer-col ul li a { color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s; }
+    .footer-col ul li a:hover { color: var(--white); }
+    .social-row { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .social-btn {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray); text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+    .social-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.75rem; color: var(--gray);
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .event-grid, .about-grid, .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
+      .gallery-section-grid { grid-template-columns: 1fr 1fr; }
+      .gs-item:nth-child(1) { grid-column: span 2; }
+      .arrow-next { right: 1.5rem; }
+    }
+    @media (max-width: 600px) {
+      section { padding: 4rem 1.5rem; }
+      nav { padding: 1rem 1.5rem; }
+      .hero-content { padding: 0 1.5rem 2.5rem; }
+      .gallery-dots { right: 1.5rem; }
+      .stats-row { flex-wrap: wrap; gap: 1.5rem; }
+      .gallery-section-grid { grid-template-columns: 1fr; }
+      .gs-item:nth-child(1) { grid-column: span 1; }
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: var(--gold); z-index: 9998;
+      transition: width 0.1s linear;
+      width: 0%;
+    }
+  
+    /* ── SWIPE HINT ── */
+    #swipe-hint {
+      position: absolute;
+      bottom: 7%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      text-align: center;
+      pointer-events: none;
+      animation: swipeAppear 0.8s ease 1.8s both, swipeFade 0.6s ease 3.2s forwards;
+    }
+    #swipe-hint span {
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+    .swipe-arrows {
+      display: flex; justify-content: center; gap: 5px; margin-top: 6px;
+    }
+    .swipe-arrows i {
+      display: block; width: 7px; height: 7px;
+      border-right: 1.5px solid rgba(255,255,255,0.4);
+      border-bottom: 1.5px solid rgba(255,255,255,0.4);
+      transform: rotate(-45deg);
+      animation: arrowPulse 1s ease infinite;
+    }
+    .swipe-arrows i:nth-child(2) { animation-delay: 0.15s; }
+    .swipe-arrows i:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes swipeAppear {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes swipeFade {
+      to { opacity: 0; visibility: hidden; }
+    }
+    @keyframes arrowPulse {
+      0%,100%{ opacity:0.2 } 50%{ opacity:0.9 }
+    }
+
+  
+    /* ── IMAGE MANAGER ── */
+    #img-manager-toggle {
+      position: fixed; bottom: 2rem; right: 2rem;
+      z-index: 2000;
+      background: var(--gold); color: var(--black);
+      border: none; cursor: pointer;
+      width: 52px; height: 52px;
+      font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.4);
+      transition: transform 0.3s ease, background 0.3s;
+      border-radius: 0;
+    }
+    #img-manager-toggle:hover { transform: scale(1.08); background: var(--gold-light); }
+
+    #img-manager {
+      position: fixed; bottom: 6rem; right: 2rem;
+      z-index: 1999;
+      width: min(480px, calc(100vw - 3rem));
+      background: var(--dark2);
+      border: 1px solid rgba(201,168,76,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      transform: translateY(20px) scale(0.97);
+      opacity: 0; visibility: hidden;
+      transition: all 0.35s cubic-bezier(0.23,1,0.32,1);
+    }
+    #img-manager.open {
+      transform: translateY(0) scale(1);
+      opacity: 1; visibility: visible;
+    }
+    .im-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .im-header h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem; letter-spacing: 0.2em; color: var(--gold);
+    }
+    .im-close {
+      background: none; border: none; color: var(--gray);
+      font-size: 1.2rem; cursor: pointer; line-height: 1;
+      transition: color 0.2s;
+    }
+    .im-close:hover { color: var(--white); }
+    .im-tabs {
+      display: flex; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .im-tab {
+      flex: 1; padding: 0.75rem;
+      background: none; border: none; cursor: pointer;
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gray); font-family: 'Inter', sans-serif;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .im-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .im-body { padding: 1.2rem; }
+    .im-panel { display: none; }
+    .im-panel.active { display: block; }
+
+    .slide-row {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .slide-preview {
+      width: 48px; height: 48px; flex-shrink: 0;
+      background: var(--dark); border: 1px solid rgba(255,255,255,0.1);
+      background-size: cover; background-position: center;
+      position: relative; overflow: hidden;
+    }
+    .slide-label {
+      font-size: 0.75rem; color: var(--gray-light);
+      flex: 1; min-width: 0;
+    }
+    .slide-label span { display: block; font-size: 0.65rem; color: var(--gray); margin-top: 2px; word-break: break-all; }
+    .im-url-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--white); padding: 0.45rem 0.7rem;
+      font-size: 0.72rem; font-family: 'Inter', sans-serif;
+      outline: none; min-width: 0;
+      transition: border-color 0.2s;
+    }
+    .im-url-input:focus { border-color: var(--gold); }
+    .im-url-input::placeholder { color: rgba(255,255,255,0.25); }
+    .im-apply-btn {
+      background: var(--gold); color: var(--black);
+      border: none; cursor: pointer;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .im-apply-btn:hover { background: var(--gold-light); }
+
+    .im-section-title {
+      font-size: 0.65rem; letter-spacing: 0.3em; color: var(--gold);
+      text-transform: uppercase; margin: 1rem 0 0.8rem;
+    }
+    .im-info {
+      font-size: 0.72rem; color: var(--gray); line-height: 1.6;
+      background: rgba(201,168,76,0.06);
+      border-left: 2px solid var(--gold);
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .im-info a { color: var(--gold); }
+
+    /* Upload area */
+    .upload-drop {
+      border: 1.5px dashed rgba(201,168,76,0.4);
+      padding: 1.5rem;
+      text-align: center; cursor: pointer;
+      transition: all 0.3s; margin-bottom: 1rem;
+    }
+    .upload-drop:hover, .upload-drop.dragover {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+    .upload-drop p { font-size: 0.78rem; color: var(--gray); margin-top: 0.5rem; }
+    .upload-drop .upload-icon { font-size: 1.8rem; }
+    .upload-select {
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .upload-select select {
+      flex: 1; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--white); padding: 0.5rem 0.7rem;
+      font-size: 0.72rem; font-family: 'Inter', sans-serif;
+      outline: none; cursor: pointer;
+    }
+    .upload-select select option { background: var(--dark2); }
+    .im-status {
+      margin-top: 0.8rem; font-size: 0.72rem;
+      color: #4ade80; min-height: 1.2em;
+      transition: opacity 0.3s;
+    }
+    .im-status.error { color: #f87171; }
+
+  
+    @keyframes swipeShow {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    @keyframes arrowPulse {
+      0%,100% { opacity:0.2; transform:rotate(-45deg) translateY(0); }
+      50%      { opacity:0.9; transform:rotate(-45deg) translateY(3px); }
+    }
+
+  
+    /* ── ADMIN PANEL (hidden, URL param ?admin=1) ── */
+    #adminPanel {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 9900;
+      background: #0d0d0d;
+      border-top: 2px solid var(--gold);
+      padding: 1.5rem 2rem;
+      font-family: 'Inter', sans-serif;
+      animation: slideUp 0.4s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    #adminPanel.visible { display: block; }
+    .admin-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .admin-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem; letter-spacing: 0.2em; color: var(--gold);
+    }
+    .admin-close {
+      background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: white; cursor: pointer; padding: 0.3rem 0.8rem;
+      font-size: 0.8rem; letter-spacing: 0.15em;
+      transition: all 0.3s;
+    }
+    .admin-close:hover { border-color: var(--gold); color: var(--gold); }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      max-height: 55vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) transparent;
+      padding-bottom: 0.5rem;
+    }
+    .admin-slide-card {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 1rem;
+      position: relative;
+    }
+    .admin-slide-label {
+      font-size: 0.65rem; letter-spacing: 0.25em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 0.6rem;
+    }
+    .admin-preview {
+      width: 100%; aspect-ratio: 16/9;
+      object-fit: cover;
+      background: #222; margin-bottom: 0.8rem;
+      display: block;
+    }
+    .admin-input-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+    .admin-input {
+      width: 100%;
+      background: #111; border: 1px solid rgba(255,255,255,0.15);
+      color: white; padding: 0.5rem 0.7rem;
+      font-size: 0.75rem; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.3s;
+    }
+    .admin-input:focus { border-color: var(--gold); }
+    .admin-input::placeholder { color: #555; }
+    .admin-apply-btn {
+      padding: 0.5rem;
+      background: var(--gold); color: var(--black);
+      border: none; cursor: pointer;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; width: 100%;
+      transition: background 0.3s;
+    }
+    .admin-apply-btn:hover { background: var(--gold-light); }
+    .admin-status {
+      font-size: 0.65rem; color: #4ade80; margin-top: 0.3rem;
+      min-height: 1rem; letter-spacing: 0.1em;
+    }
+    .admin-footer-row {
+      display: flex; gap: 1rem; margin-top: 1.2rem;
+      flex-wrap: wrap; align-items: center;
+    }
+    .admin-save-all {
+      padding: 0.7rem 2rem;
+      background: var(--gold); color: var(--black);
+      border: none; cursor: pointer;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: background 0.3s;
+    }
+    .admin-save-all:hover { background: var(--gold-light); }
+    .admin-hint {
+      font-size: 0.72rem; color: #666; line-height: 1.6;
+    }
+    .admin-hint a { color: var(--gold); text-decoration: none; }
+    .admin-badge {
+      position: fixed; bottom: 12px; right: 16px;
+      background: var(--gold); color: var(--black);
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      padding: 0.3rem 0.6rem; z-index: 9901;
+      cursor: pointer; font-weight: 700;
+      display: none;
+    }
+    #adminPanel.visible ~ #adminBadge,
+    .admin-badge.visible { display: block; }
+
+  </style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress"></div>
+
+<!-- Loader -->
+<div id="loader"><div class="loader-text">NJOYMNT</div></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">NJOYMNT <span>MVP EVENTS</span></a>
+  <button class="burger" id="burgerBtn" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- FULLSCREEN MENU -->
+<div id="fullmenu">
+  <ul class="menu-links">
+    <li><a href="#hero" class="menu-link">Home</a></li>
+    <li><a href="#event" class="menu-link">Next Event</a></li>
+    <li><a href="#vibes" class="menu-link">Sound</a></li>
+    <li><a href="#about" class="menu-link">About</a></li>
+    <li><a href="#gallery" class="menu-link">Gallery</a></li>
+    <li><a href="#tickets" class="menu-link">Tickets</a></li>
+    <li><a href="#faq" class="menu-link">FAQ</a></li>
+  </ul>
+  <div class="menu-footer">
+    <a href="#">Instagram</a>
+    <a href="#">TikTok</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+
+<!-- HERO GALLERY -->
+<section id="hero">
+  <div class="gallery-track" id="galleryTrack">
+    <div class="gallery-slide slide-1 active">
+      <div class="slide-inner">
+        <svg class="crowd-svg" viewBox="0 0 900 300" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="50" cy="280" rx="30" ry="60"/><ellipse cx="110" cy="260" rx="28" ry="70"/><ellipse cx="170" cy="270" rx="25" ry="65"/><ellipse cx="230" cy="255" rx="32" ry="75"/><ellipse cx="290" cy="265" rx="27" ry="62"/><ellipse cx="350" cy="250" rx="30" ry="80"/><ellipse cx="410" cy="268" rx="26" ry="68"/><ellipse cx="470" cy="255" rx="31" ry="75"/><ellipse cx="530" cy="262" rx="29" ry="65"/><ellipse cx="590" cy="250" rx="33" ry="78"/><ellipse cx="650" cy="265" rx="28" ry="68"/><ellipse cx="710" cy="255" rx="30" ry="72"/><ellipse cx="770" cy="260" rx="27" ry="66"/><ellipse cx="830" cy="252" rx="31" ry="74"/><ellipse cx="880" cy="268" rx="25" ry="60"/>
+          <circle cx="50" cy="205" r="18"/><circle cx="110" cy="178" r="20"/><circle cx="170" cy="192" r="17"/><circle cx="230" cy="168" r="21"/><circle cx="290" cy="190" r="18"/><circle cx="350" cy="162" r="22"/><circle cx="410" cy="188" r="19"/><circle cx="470" cy="168" r="21"/><circle cx="530" cy="182" r="18"/><circle cx="590" cy="162" r="22"/><circle cx="650" cy="184" r="19"/><circle cx="710" cy="172" r="21"/><circle cx="770" cy="180" r="18"/><circle cx="830" cy="168" r="21"/><circle cx="880" cy="186" r="17"/>
+        </svg>
+      </div>
+    </div>
+    <div class="gallery-slide slide-2">
+      <div class="slide-inner">
+        <svg class="crowd-svg" viewBox="0 0 900 300" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="70" cy="280" rx="28" ry="65"/><ellipse cx="140" cy="265" rx="32" ry="72"/><ellipse cx="200" cy="255" rx="26" ry="68"/><ellipse cx="265" cy="270" rx="30" ry="62"/><ellipse cx="330" cy="252" rx="29" ry="76"/><ellipse cx="395" cy="268" rx="27" ry="64"/><ellipse cx="455" cy="255" rx="33" ry="78"/><ellipse cx="520" cy="265" rx="28" ry="68"/><ellipse cx="585" cy="252" rx="31" ry="73"/><ellipse cx="645" cy="260" rx="26" ry="66"/><ellipse cx="710" cy="252" rx="30" ry="75"/><ellipse cx="775" cy="262" rx="28" ry="67"/><ellipse cx="835" cy="255" rx="31" ry="71"/><ellipse cx="880" cy="265" rx="24" ry="62"/>
+          <circle cx="70" cy="200" r="19"/><circle cx="140" cy="180" r="21"/><circle cx="200" cy="174" r="18"/><circle cx="265" cy="195" r="20"/><circle cx="330" cy="165" r="22"/><circle cx="395" cy="190" r="19"/><circle cx="455" cy="166" r="22"/><circle cx="520" cy="184" r="20"/><circle cx="585" cy="167" r="22"/><circle cx="645" cy="178" r="19"/><circle cx="710" cy="166" r="21"/><circle cx="775" cy="178" r="19"/><circle cx="835" cy="172" r="21"/><circle cx="880" cy="185" r="17"/>
+        </svg>
+      </div>
+    </div>
+    <div class="gallery-slide slide-3">
+      <div class="slide-inner">
+        <svg class="crowd-svg" viewBox="0 0 900 300" fill="white"/>
+      </div>
+    </div>
+    <div class="gallery-slide slide-4">
+      <div class="slide-inner">
+        <svg class="crowd-svg" viewBox="0 0 900 300" fill="white"/>
+      </div>
+    </div>
+    <div class="gallery-slide slide-5">
+      <div class="slide-inner">
+        <svg class="crowd-svg" viewBox="0 0 900 300" fill="white"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrows -->
+  <div class="gallery-arrow arrow-prev" id="arrowPrev">&#8592;</div>
+  <div class="gallery-arrow arrow-next" id="arrowNext">&#8594;</div>
+
+  <!-- Dots -->
+  <div class="gallery-dots" id="galleryDots"></div>
+
+
+  <!-- SWIPE HINT (auto-disappears after 3.2s) -->
+  <div id="swipe-hint">
+    <span>Swipe</span>
+    <div class="swipe-arrows"><i></i><i></i><i></i></div>
+  </div>
+
+  <!-- Content -->
+  <div class="hero-content">
+    <p class="hero-tag">MVP Events presents</p>
+    <h1 class="hero-title">NJOY<span class="gold">MNT</span></h1>
+    <p class="hero-sub">Afrotrap · Afrohouse · Latino · Trap · Hip Hop · R&amp;B</p>
+    <div class="hero-ctas">
+      <a href="#tickets" class="btn btn-gold">Get Tickets</a>
+      <a href="#event" class="btn btn-outline">Next Event</a>
+    </div>
+  </div>
+</section>
+
+
+  <!-- Swipe Hint -->
+  <div id="swipeHint" style="
+    position:absolute; bottom:5%; left:50%; transform:translateX(-50%);
+    z-index:10; text-align:center; pointer-events:none;
+    animation: swipeShow 2.5s ease forwards;
+  ">
+    <span style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Swipe</span>
+    <div style="display:flex;justify-content:center;gap:5px;margin-top:5px;">
+      <span style="display:block;width:6px;height:6px;border-right:1.5px solid rgba(255,255,255,0.4);border-bottom:1.5px solid rgba(255,255,255,0.4);transform:rotate(-45deg);animation:arrowPulse 1s infinite;"></span>
+      <span style="display:block;width:6px;height:6px;border-right:1.5px solid rgba(255,255,255,0.4);border-bottom:1.5px solid rgba(255,255,255,0.4);transform:rotate(-45deg);animation:arrowPulse 1s 0.15s infinite;"></span>
+      <span style="display:block;width:6px;height:6px;border-right:1.5px solid rgba(255,255,255,0.4);border-bottom:1.5px solid rgba(255,255,255,0.4);transform:rotate(-45deg);animation:arrowPulse 1s 0.3s infinite;"></span>
+    </div>
+  </div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <span>FOR THE CULTURE</span><span class="dot-sep">✦</span>
+    <span>NJOYMNT</span><span class="dot-sep">✦</span>
+    <span>MVP EVENTS</span><span class="dot-sep">✦</span>
+    <span>AFROTRAP</span><span class="dot-sep">✦</span>
+    <span>AFROHOUSE</span><span class="dot-sep">✦</span>
+    <span>LATINO</span><span class="dot-sep">✦</span>
+    <span>HIP HOP</span><span class="dot-sep">✦</span>
+    <span>R&amp;B</span><span class="dot-sep">✦</span>
+    <span>FOR THE CULTURE</span><span class="dot-sep">✦</span>
+    <span>NJOYMNT</span><span class="dot-sep">✦</span>
+    <span>MVP EVENTS</span><span class="dot-sep">✦</span>
+    <span>AFROTRAP</span><span class="dot-sep">✦</span>
+    <span>AFROHOUSE</span><span class="dot-sep">✦</span>
+    <span>LATINO</span><span class="dot-sep">✦</span>
+    <span>HIP HOP</span><span class="dot-sep">✦</span>
+    <span>R&amp;B</span><span class="dot-sep">✦</span>
+  </div>
+</div>
+
+<!-- UPCOMING EVENT -->
+<section id="event">
+  <div class="reveal">
+    <p class="section-label">Upcoming</p>
+    <h2 class="section-title">Next Event</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="event-grid reveal">
+    <div class="event-visual">
+      <div class="event-visual-bg"></div>
+      <div class="event-badge">⚡ Upcoming</div>
+      <div class="event-visual-title">NJOY<br>MNT</div>
+    </div>
+    <div class="event-meta">
+      <div class="meta-row">
+        <div class="meta-icon">📅</div>
+        <div>
+          <div class="meta-label">Date</div>
+          <div class="meta-value">Saturday, 14. June 2025</div>
+          <div class="meta-sub">Doors open: 22:00 · End: 05:00</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-icon">📍</div>
+        <div>
+          <div class="meta-label">Location</div>
+          <div class="meta-value">Vienna, Austria</div>
+          <div class="meta-sub">Venue TBA — follow @mvpevents</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-icon">🎧</div>
+        <div>
+          <div class="meta-label">Sound</div>
+          <div class="meta-value">Afrotrap · Afrohouse · Latino</div>
+          <div class="meta-sub">+ Trap · Hip Hop · R&amp;B</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-icon">👔</div>
+        <div>
+          <div class="meta-label">Dress Code</div>
+          <div class="meta-value">Dressed Up — Look Good</div>
+          <div class="meta-sub">No caps · No sportswear inside</div>
+        </div>
+      </div>
+      <div>
+        <div class="ticket-status"><span class="status-dot"></span> Tickets Available</div>
+        <a href="#tickets" class="btn btn-gold" style="margin-top:1.2rem; display:inline-flex;">Secure Your Spot</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOUND / VIBES -->
+<section id="vibes">
+  <div class="reveal">
+    <p class="section-label">The Sound</p>
+    <h2 class="section-title">Music Vibes</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="vibes-grid reveal">
+    <div class="vibe-card">
+      <div class="vibe-number">01</div>
+      <div class="vibe-name">Afro&shy;trap</div>
+      <div class="vibe-desc">High-energy beats blending African rhythms with trap percussion.</div>
+    </div>
+    <div class="vibe-card">
+      <div class="vibe-number">02</div>
+      <div class="vibe-name">Afro&shy;house</div>
+      <div class="vibe-desc">Deep soulful grooves rooted in African house traditions.</div>
+    </div>
+    <div class="vibe-card">
+      <div class="vibe-number">03</div>
+      <div class="vibe-name">Latino</div>
+      <div class="vibe-desc">Reggaeton, Dembow & Salsa — the rhythm of the diaspora.</div>
+    </div>
+    <div class="vibe-card">
+      <div class="vibe-number">04</div>
+      <div class="vibe-name">Trap</div>
+      <div class="vibe-desc">Dark 808s, hard hitting snares and melodic hooks.</div>
+    </div>
+    <div class="vibe-card">
+      <div class="vibe-number">05</div>
+      <div class="vibe-name">Hip Hop</div>
+      <div class="vibe-desc">Classic bars and modern rap culture. The culture, the roots.</div>
+    </div>
+    <div class="vibe-card">
+      <div class="vibe-number">06</div>
+      <div class="vibe-name">R&amp;B</div>
+      <div class="vibe-desc">Smooth, emotional vocals over silky beats. Feel every note.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p class="section-label">Who We Are</p>
+      <h2 class="section-title">For The<br><span style="color:var(--gold)">Culture</span></h2>
+      <div class="gold-line"></div>
+      <p><span>NJOYMNT</span> is more than a night out — it's a movement. Built by MVP Events for everyone who lives and breathes culture, music, and authentic energy.</p>
+      <p>We curate events where sound selection, crowd energy and atmosphere come together as one. No filler, no compromise — just the right music for the right people in the right space.</p>
+      <p>From the dancefloor to the details, every NJOYMNT event is crafted with intention. <span>For the culture.</span></p>
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-num">10+</div><div class="stat-label">Events</div></div>
+        <div class="stat-item"><div class="stat-num">5K+</div><div class="stat-label">Guests</div></div>
+        <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Music Styles</div></div>
+      </div>
+    </div>
+    <div class="about-visual reveal">
+      <div class="about-img"><div class="about-img-bg ab1"></div></div>
+      <div class="about-img"><div class="about-img-bg ab2"></div></div>
+      <div class="about-img"><div class="about-img-bg ab3"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY SECTION -->
+<section id="gallery">
+  <div class="reveal">
+    <p class="section-label">Past Events</p>
+    <h2 class="section-title">Gallery</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="gallery-section-grid reveal">
+    <div class="gs-item"><div class="gs-item-bg gi1"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi2"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi3"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi4"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi5"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi6"></div></div>
+    <div class="gs-item"><div class="gs-item-bg gi7"></div></div>
+  </div>
+</section>
+
+<!-- TICKETS -->
+<section id="tickets">
+  <div class="reveal">
+    <p class="section-label">Join The Night</p>
+    <h2 class="section-title">Tickets</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="tickets-grid reveal">
+    <div class="ticket-card">
+      <div class="ticket-tier">Early Bird</div>
+      <div class="ticket-price"><span>€</span>12</div>
+      <ul class="ticket-includes">
+        <li>General Entry</li>
+        <li>Limited Availability</li>
+        <li>Welcome Drink</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="width:100%; justify-content:center;">Buy Now</a>
+    </div>
+    <div class="ticket-card featured">
+      <div class="ticket-tier">Standard</div>
+      <div class="ticket-price"><span>€</span>18</div>
+      <ul class="ticket-includes">
+        <li>General Entry</li>
+        <li>Skip the Queue</li>
+        <li>Welcome Drink</li>
+        <li>Merch Discount</li>
+      </ul>
+      <a href="#" class="btn" style="background:var(--black);color:var(--gold);width:100%;justify-content:center;">Buy Now</a>
+    </div>
+    <div class="ticket-card">
+      <div class="ticket-tier">VIP Table</div>
+      <div class="ticket-price"><span>€</span>80</div>
+      <ul class="ticket-includes">
+        <li>Reserved Table (4 persons)</li>
+        <li>Bottle Service</li>
+        <li>Priority Entry</li>
+        <li>Dedicated Host</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="width:100%; justify-content:center;">Book Table</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="reveal">
+    <p class="section-label">Questions</p>
+    <h2 class="section-title">FAQ</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="faq-list reveal" style="max-width:800px;">
+    <div class="faq-item">
+      <div class="faq-q">What is NJOYMNT? <span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>NJOYMNT is an urban event series by MVP Events focused on authentic culture, curated sound and community energy. The motto: For The Culture.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What is the age restriction? <span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>All NJOYMNT events are strictly 18+. A valid ID or passport is required at the door. No exceptions.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is there a dress code? <span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>Yes — we ask everyone to come dressed up. Look good, feel good. No caps, no sportswear inside the venue. Come ready to make an impression.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I get a refund on my ticket? <span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>Tickets are generally non-refundable. In the event of cancellation, all ticket holders will be contacted directly with options.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How do I stay updated? <span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>Follow us on Instagram and TikTok for announcements, venue reveals and last-minute updates. Turn on notifications so you never miss a drop.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-name">NJOYMNT</div>
+      <div class="footer-brand-sub">by MVP Events</div>
+      <p class="footer-desc">An event series built for those who move to the rhythm of culture. Afrotrap, Afrohouse, Latino, Trap, Hip Hop & R&B — always for the culture.</p>
+      <div class="social-row">
+        <a href="#" class="social-btn" title="Instagram">ig</a>
+        <a href="#" class="social-btn" title="TikTok">tt</a>
+        <a href="#" class="social-btn" title="Email">@</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="#event">Next Event</a></li>
+        <li><a href="#vibes">Sound</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#tickets">Tickets</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">booking@mvpevents.at</a></li>
+        <li><a href="#">Press Inquiries</a></li>
+        <li><a href="#">DJ / Artist Booking</a></li>
+        <li><a href="#">Impressum</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 MVP Events · NJOYMNT. All rights reserved.</span>
+    <span>For The Culture 🖤</span>
+  </div>
+</footer>
+
+<script>
+  // ── LOADER ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('loader').classList.add('hide');
+    }, 1400);
+  });
+
+  // ── NAVBAR SCROLL ──
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+    // Progress bar
+    const total = document.body.scrollHeight - window.innerHeight;
+    document.getElementById('progress').style.width = (window.scrollY / total * 100) + '%';
+  });
+
+  // ── BURGER MENU ──
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.getElementById('fullmenu');
+  burger.addEventListener('click', () => {
+    burger.classList.toggle('open');
+    menu.classList.toggle('open');
+    document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+  });
+  document.querySelectorAll('.menu-link').forEach(link => {
+    link.addEventListener('click', () => {
+      burger.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // ── HERO GALLERY SLIDER ──
+  const track = document.getElementById('galleryTrack');
+  const slides = track.querySelectorAll('.gallery-slide');
+  const dotsContainer = document.getElementById('galleryDots');
+  let current = 0;
+  let autoTimer;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    track.style.transform = `translateX(-${current * 100}%)`;
+  }
+
+  function startAuto() { autoTimer = setInterval(() => goTo(current + 1), 4500); }
+  function stopAuto() { clearInterval(autoTimer); }
+
+  document.getElementById('arrowNext').addEventListener('click', () => { stopAuto(); goTo(current + 1); startAuto(); });
+  document.getElementById('arrowPrev').addEventListener('click', () => { stopAuto(); goTo(current - 1); startAuto(); });
+  startAuto();
+
+  // Touch swipe for hero
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  track.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { stopAuto(); goTo(current + (diff > 0 ? 1 : -1)); startAuto(); }
+  });
+
+  // ── FAQ ──
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => observer.observe(r));
+
+  // ── IMAGE MANAGER ──
+  const imToggle = document.getElementById('img-manager-toggle');
+  const imPanel  = document.getElementById('img-manager');
+  const imClose  = document.getElementById('imClose');
+
+  imToggle.addEventListener('click', () => imPanel.classList.toggle('open'));
+  imClose.addEventListener('click',  () => imPanel.classList.remove('open'));
+
+  // Tabs
+  document.querySelectorAll('.im-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.im-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.im-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // Map of target keys to DOM elements
+  function getTargetEl(key) {
+    if (key.startsWith('hero-')) {
+      const idx = parseInt(key.split('-')[1]);
+      return document.querySelectorAll('.gallery-slide')[idx];
+    }
+    if (key === 'event-visual') return document.querySelector('.event-visual-bg');
+    if (key.startsWith('gallery-')) {
+      const idx = parseInt(key.split('-')[1]);
+      return document.querySelectorAll('.gs-item-bg')[idx];
+    }
+    return null;
+  }
+
+  function applyBg(el, url) {
+    if (!el || !url) return false;
+    el.style.backgroundImage = `url('${url}')`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    return true;
+  }
+
+  // Build URL slide rows
+  const slideRowsContainer = document.getElementById('slide-rows-url');
+  const urlTargets = [
+    { key:'hero-0', label:'Hero Slide 1' },
+    { key:'hero-1', label:'Hero Slide 2' },
+    { key:'hero-2', label:'Hero Slide 3' },
+    { key:'hero-3', label:'Hero Slide 4' },
+    { key:'hero-4', label:'Hero Slide 5' },
+    { key:'event-visual', label:'Event Visual' },
+    { key:'gallery-0', label:'Gallery 1 (large)' },
+    { key:'gallery-1', label:'Gallery 2' },
+    { key:'gallery-2', label:'Gallery 3' },
+    { key:'gallery-3', label:'Gallery 4' },
+    { key:'gallery-4', label:'Gallery 5' },
+    { key:'gallery-5', label:'Gallery 6' },
+    { key:'gallery-6', label:'Gallery 7' },
+  ];
+
+  urlTargets.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'slide-row';
+    row.innerHTML = `
+      <div class="slide-preview" id="prev-${t.key}"></div>
+      <div class="slide-label">${t.label}<span id="lbl-${t.key}">No image set</span></div>
+      <input class="im-url-input" id="inp-${t.key}" type="text" placeholder="Paste URL…"/>
+      <button class="im-apply-btn" data-key="${t.key}">Apply</button>
+    `;
+    slideRowsContainer.appendChild(row);
+  });
+
+  document.querySelectorAll('#slide-rows-url .im-apply-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      const url = document.getElementById('inp-' + key).value.trim();
+      const el  = getTargetEl(key);
+      const status = document.getElementById('url-status');
+      if (!url) { showStatus(status, 'Please enter a URL.', true); return; }
+      const ok = applyBg(el, url);
+      document.getElementById('prev-' + key).style.backgroundImage = `url('${url}')`;
+      document.getElementById('prev-' + key).style.backgroundSize = 'cover';
+      document.getElementById('lbl-' + key).textContent = url.length > 30 ? url.slice(0,30)+'…' : url;
+      showStatus(status, ok ? `✓ ${key} updated!` : 'Element not found.', !ok);
+    });
+  });
+
+  // Upload panel
+  const uploadDrop = document.getElementById('uploadDrop');
+  const fileInput  = document.getElementById('fileInput');
+  let pendingFile  = null;
+
+  uploadDrop.addEventListener('click', () => fileInput.click());
+  uploadDrop.addEventListener('dragover', e => { e.preventDefault(); uploadDrop.classList.add('dragover'); });
+  uploadDrop.addEventListener('dragleave', () => uploadDrop.classList.remove('dragover'));
+  uploadDrop.addEventListener('drop', e => {
+    e.preventDefault(); uploadDrop.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) { pendingFile = f; previewFile(f); }
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) { pendingFile = fileInput.files[0]; previewFile(fileInput.files[0]); }
+  });
+
+  function previewFile(f) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadDrop.style.backgroundImage = `url('${e.target.result}')`;
+      uploadDrop.style.backgroundSize = 'cover';
+      uploadDrop.style.backgroundPosition = 'center';
+      uploadDrop.querySelector('p').textContent = f.name;
+    };
+    reader.readAsDataURL(f);
+  }
+
+  document.getElementById('uploadApplyBtn').addEventListener('click', () => {
+    const status = document.getElementById('upload-status');
+    if (!pendingFile) { showStatus(status, 'Please select an image first.', true); return; }
+    const key = document.getElementById('uploadTarget').value;
+    const el  = getTargetEl(key);
+    const reader = new FileReader();
+    reader.onload = e => {
+      const ok = applyBg(el, e.target.result);
+      showStatus(status, ok ? `✓ Applied to ${key}!` : 'Element not found.', !ok);
+    };
+    reader.readAsDataURL(pendingFile);
+  });
+
+  function showStatus(el, msg, isError = false) {
+    el.textContent = msg;
+    el.className = 'im-status' + (isError ? ' error' : '');
+    setTimeout(() => { el.textContent = ''; }, 3000);
+  }
+
+  
+  // ══ ADMIN PANEL ══
+  const SLIDE_COUNT = 5;
+  const SLIDE_KEYS = Array.from({length: SLIDE_COUNT}, (_,i) => `njoymnt_slide_${i}`);
+
+  // Slide metadata for admin labels
+  const slideLabels = [
+    'Hero Slide 1', 'Hero Slide 2', 'Hero Slide 3',
+    'Hero Slide 4', 'Hero Slide 5'
+  ];
+
+  let isAdminMode = false;
+
+  // Check URL param
+  function checkAdminMode() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === '1') {
+      isAdminMode = true;
+      document.getElementById('adminBadge').classList.add('visible');
+      buildAdminPanel();
+      toggleAdmin(true);
+    }
+  }
+
+  function toggleAdmin(open) {
+    const panel = document.getElementById('adminPanel');
+    if (open) {
+      panel.classList.add('visible');
+      document.body.style.paddingBottom = panel.offsetHeight + 40 + 'px';
+    } else {
+      panel.classList.remove('visible');
+      document.body.style.paddingBottom = '';
+    }
+  }
+
+  function buildAdminPanel() {
+    const grid = document.getElementById('adminGrid');
+    grid.innerHTML = '';
+    SLIDE_KEYS.forEach((key, i) => {
+      const savedUrl = localStorage.getItem(key) || '';
+      const card = document.createElement('div');
+      card.className = 'admin-slide-card';
+      card.innerHTML = `
+        <div class="admin-slide-label">Slide ${i+1} — ${slideLabels[i]}</div>
+        <img class="admin-preview" id="preview_${i}"
+          src="${savedUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%2290%22><rect width=%22160%22 height=%2290%22 fill=%22%23222%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23555%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2212%22>No Image</text></svg>'}"
+          alt="Preview slide ${i+1}"
+        />
+        <div class="admin-input-wrap">
+          <input class="admin-input" id="url_${i}" type="url"
+            placeholder="Paste image URL here..."
+            value="${savedUrl}"
+            oninput="previewInput(${i})"
+          />
+          <button class="admin-apply-btn" onclick="adminApply(${i})">Apply</button>
+          <div class="admin-status" id="status_${i}"></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Also apply any saved images on load
+    applySavedImages();
+  }
+
+  function previewInput(i) {
+    const url = document.getElementById(`url_${i}`).value.trim();
+    if (url) document.getElementById(`preview_${i}`).src = url;
+  }
+
+  function adminApply(i) {
+    const url = document.getElementById(`url_${i}`).value.trim();
+    const status = document.getElementById(`status_${i}`);
+    if (!url) { status.style.color='#f87171'; status.textContent = '⚠ Please enter a URL'; return; }
+
+    // Apply to slide
+    setSlideImage(i, url);
+    status.style.color = '#4ade80';
+    status.textContent = '✓ Applied live!';
+    setTimeout(() => status.textContent = '', 2500);
+  }
+
+  function setSlideImage(i, url) {
+    const slides = document.querySelectorAll('.gallery-slide');
+    if (slides[i]) {
+      slides[i].style.backgroundImage = `url('${url}')`;
+      slides[i].style.backgroundSize = 'cover';
+      slides[i].style.backgroundPosition = 'center';
+      // Hide SVG crowd overlay when real image is set
+      const inner = slides[i].querySelector('.slide-inner');
+      if (inner) inner.style.display = 'none';
+    }
+  }
+
+  function adminSaveAll() {
+    let saved = 0;
+    SLIDE_KEYS.forEach((key, i) => {
+      const url = document.getElementById(`url_${i}`)?.value.trim();
+      if (url) { localStorage.setItem(key, url); saved++; }
+    });
+    alert(`✓ ${saved} image(s) saved to LocalStorage.\nThey will load automatically next time you open the page.`);
+  }
+
+  function applySavedImages() {
+    SLIDE_KEYS.forEach((key, i) => {
+      const url = localStorage.getItem(key);
+      if (url) setSlideImage(i, url);
+    });
+  }
+
+  function adminExportConfig() {
+    const config = {};
+    SLIDE_KEYS.forEach((key, i) => {
+      const url = document.getElementById(`url_${i}`)?.value.trim()
+                  || localStorage.getItem(key) || '';
+      config[`slide_${i+1}`] = url;
+    });
+    const json = JSON.stringify(config, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      alert('✓ Config JSON copied to clipboard!\n\nPaste it into your HTML as a JS variable to hardcode the images permanently.');
+    });
+  }
+
+  function showHostingGuide() {
+    document.getElementById('hostingModal').style.display = 'flex';
+  }
+
+  // Auto-apply saved images on page load (for visitors too)
+  applySavedImages();
+  checkAdminMode();
+
+</script>
+
+  <!-- IMAGE MANAGER TOGGLE -->
+  <button id="img-manager-toggle" title="Image Manager">🖼️</button>
+
+  <!-- IMAGE MANAGER PANEL -->
+  <div id="img-manager">
+    <div class="im-header">
+      <h3>Image Manager</h3>
+      <button class="im-close" id="imClose">✕</button>
+    </div>
+    <div class="im-tabs">
+      <button class="im-tab active" data-panel="url">🔗 URL / Drive</button>
+      <button class="im-tab" data-panel="upload">📁 Upload</button>
+      <button class="im-tab" data-panel="info">ℹ️ How To</button>
+    </div>
+    <div class="im-body">
+
+      <!-- URL PANEL -->
+      <div class="im-panel active" id="panel-url">
+        <p style="font-size:0.72rem;color:var(--gray);margin-bottom:1rem;">Paste a direct image URL (Dropbox, Google Drive, Unsplash, etc.) for each slide.</p>
+        <div id="slide-rows-url"></div>
+        <div class="im-status" id="url-status"></div>
+      </div>
+
+      <!-- UPLOAD PANEL -->
+      <div class="im-panel" id="panel-upload">
+        <div class="upload-drop" id="uploadDrop">
+          <div class="upload-icon">📤</div>
+          <strong style="font-size:0.85rem;">Drop image here</strong>
+          <p>or click to browse (JPG, PNG, WEBP)</p>
+          <input type="file" id="fileInput" accept="image/*" style="display:none"/>
+        </div>
+        <div class="upload-select">
+          <select id="uploadTarget">
+            <option value="hero-0">Hero Slide 1</option>
+            <option value="hero-1">Hero Slide 2</option>
+            <option value="hero-2">Hero Slide 3</option>
+            <option value="hero-3">Hero Slide 4</option>
+            <option value="hero-4">Hero Slide 5</option>
+            <option value="event-visual">Event Visual</option>
+            <option value="gallery-0">Gallery 1 (large)</option>
+            <option value="gallery-1">Gallery 2</option>
+            <option value="gallery-2">Gallery 3</option>
+            <option value="gallery-3">Gallery 4</option>
+            <option value="gallery-4">Gallery 5</option>
+            <option value="gallery-5">Gallery 6</option>
+            <option value="gallery-6">Gallery 7</option>
+          </select>
+          <button class="im-apply-btn" id="uploadApplyBtn">Apply</button>
+        </div>
+        <div class="im-status" id="upload-status"></div>
+      </div>
+
+      <!-- INFO PANEL -->
+      <div class="im-panel" id="panel-info">
+        <p class="im-section-title">Google Drive</p>
+        <div class="im-info">
+          1. Right-click file → <strong>Share</strong> → <em>Anyone with link</em><br>
+          2. Copy the link ID from the URL:<br>
+          <code style="color:var(--gold-light);">drive.google.com/file/d/<strong>[ID]</strong>/view</code><br>
+          3. Paste this as URL:<br>
+          <code style="color:var(--gold-light);">https://drive.google.com/uc?export=view&id=[ID]</code>
+        </div>
+        <p class="im-section-title">Dropbox</p>
+        <div class="im-info">
+          1. Share the file → copy link<br>
+          2. Replace <code>?dl=0</code> with <code>?raw=1</code> at the end<br>
+          Example: <code style="color:var(--gold-light);">dropbox.com/s/xyz/photo.jpg?raw=1</code>
+        </div>
+        <p class="im-section-title">Any Direct URL</p>
+        <div class="im-info">
+          Paste any direct image link — Unsplash, Imgur, your own CDN.<br>
+          Must end in <code>.jpg</code>, <code>.png</code>, <code>.webp</code> or use <code>?raw=1</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- ══ ADMIN PANEL (only visible via ?admin=1) ══ -->
+<div id="adminPanel">
+  <div class="admin-header">
+    <span class="admin-title">⚙ NJOYMNT — Image Manager</span>
+    <button class="admin-close" onclick="toggleAdmin(false)">✕ Close</button>
+  </div>
+  <div class="admin-grid" id="adminGrid">
+    <!-- Cards injected by JS -->
+  </div>
+  <div class="admin-footer-row">
+    <button class="admin-save-all" onclick="adminSaveAll()">💾 Save All to LocalStorage</button>
+    <button class="admin-save-all" style="background:#222;color:var(--gold);border:1px solid var(--gold);" onclick="adminExportConfig()">📋 Copy Config JSON</button>
+    <p class="admin-hint">
+      Paste any <strong>public image URL</strong> (Google Drive direct-link, Dropbox, Unsplash, etc.).<br>
+      Images are saved in your browser. For permanent hosting → see <a href="#" onclick="showHostingGuide()">Hosting Guide</a>.
+    </p>
+  </div>
+</div>
+
+<!-- Admin badge (only in admin mode) -->
+<div class="admin-badge" id="adminBadge" onclick="toggleAdmin(true)">ADMIN</div>
+
+<!-- Hosting Guide Modal -->
+<div id="hostingModal" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
+">
+  <div style="background:#111; border:1px solid var(--gold); padding:2.5rem; max-width:600px; width:90%; position:relative;">
+    <button onclick="document.getElementById('hostingModal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;">✕</button>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.15em;color:var(--gold);margin-bottom:1.5rem;">Image Hosting Guide</h3>
+    <div style="font-size:0.85rem;line-height:1.9;color:#ccc;">
+      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option A — Google Drive</p>
+      <ol style="padding-left:1.2rem;margin-bottom:1.5rem;">
+        <li>Upload your photo to Google Drive</li>
+        <li>Right-click → <strong>Share</strong> → Anyone with the link → <strong>Viewer</strong></li>
+        <li>Copy the file ID from the URL: <code style="color:var(--gold)">drive.google.com/file/d/<strong>FILE_ID</strong>/view</code></li>
+        <li>Use this URL format: <code style="color:var(--gold)">https://drive.google.com/uc?export=view&amp;id=FILE_ID</code></li>
+      </ol>
+      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option B — Dropbox</p>
+      <ol style="padding-left:1.2rem;margin-bottom:1.5rem;">
+        <li>Upload photo to Dropbox</li>
+        <li>Click <strong>Share</strong> → Copy Link</li>
+        <li>Change <code style="color:var(--gold)">?dl=0</code> → <code style="color:var(--gold)">?raw=1</code> at the end of the URL</li>
+        <li>Paste the modified URL into the admin panel</li>
+      </ol>
+      <p style="color:var(--gold);font-weight:600;margin-bottom:0.5rem;">Option C — Paste direct URL from anywhere</p>
+      <p>Any publicly accessible image URL works — Unsplash, Imgur, your own server, CDN, etc.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
